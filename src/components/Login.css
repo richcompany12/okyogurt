@@ -1,0 +1,163 @@
+/* src/components/Login.css */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.login-box {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-header h1 {
+  font-size: 2.5em;
+  margin: 0 0 10px 0;
+  color: #6c5ce7;
+}
+
+.login-header h2 {
+  font-size: 1.3em;
+  color: #666;
+  font-weight: normal;
+  margin: 0;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.input-group label {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9em;
+}
+
+.input-group input,
+.input-group select {
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: border-color 0.3s;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+}
+
+.error-message {
+  background: #ff6b6b;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+.login-button {
+  background: #6c5ce7;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+
+.login-button:hover:not(:disabled) {
+  background: #5a4fcf;
+}
+
+.login-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  color: #6c5ce7;
+  cursor: pointer;
+  font-size: 0.95em;
+  text-decoration: underline;
+}
+
+.toggle-button:hover {
+  color: #5a4fcf;
+}
+
+.test-accounts {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f8f9ff;
+  border-radius: 8px;
+  border-left: 4px solid #6c5ce7;
+}
+
+.test-accounts h4 {
+  margin: 0 0 15px 0;
+  color: #6c5ce7;
+  font-size: 1em;
+}
+
+.test-account {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  line-height: 1.4;
+  border: 1px solid #e0e0e0;
+}
+
+.test-account strong {
+  color: #333;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .login-box {
+    padding: 30px 20px;
+    margin: 10px;
+  }
+  
+  .login-header h1 {
+    font-size: 2em;
+  }
+  
+  .login-header h2 {
+    font-size: 1.1em;
+  }
+}

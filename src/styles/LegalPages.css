@@ -1,0 +1,202 @@
+/* LegalPages.css - 법적 페이지 공통 스타일 */
+
+.legal-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem 0;
+}
+
+.legal-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.legal-title {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin: 0;
+  padding: 2rem;
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.legal-updated {
+  background: #f8f9ff;
+  color: #6b7280;
+  padding: 1rem 2rem;
+  margin: 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: right;
+}
+
+.legal-section {
+  padding: 2rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.legal-section:last-of-type {
+  border-bottom: none;
+}
+
+.legal-section h2 {
+  color: #4c51bf;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e6e9ff;
+}
+
+.legal-section h3 {
+  color: #5b21b6;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem 0;
+}
+
+.legal-section p {
+  color: #374151;
+  line-height: 1.6;
+  margin: 1rem 0;
+}
+
+.legal-section ul {
+  color: #374151;
+  line-height: 1.6;
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.legal-section li {
+  margin: 0.5rem 0;
+}
+
+.legal-section ol {
+  color: #374151;
+  line-height: 1.6;
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.legal-section ol li {
+  margin: 1rem 0;
+}
+
+/* 정보 테이블 스타일 */
+.info-table {
+  background: #f8f9ff;
+  border: 1px solid #e6e9ff;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.info-row {
+  display: flex;
+  border-bottom: 1px solid #e6e9ff;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  background: #667eea;
+  color: white;
+  padding: 0.8rem 1rem;
+  font-weight: 600;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.info-value {
+  padding: 0.8rem 1rem;
+  flex: 1;
+  background: white;
+}
+
+/* 푸터 */
+.legal-footer {
+  padding: 2rem;
+  text-align: center;
+  background: #f8f9ff;
+}
+
+.legal-back-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.8rem 2rem;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.legal-back-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.legal-back-btn:active {
+  transform: translateY(0);
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .legal-page {
+    padding: 1rem 0;
+  }
+  
+  .legal-container {
+    margin: 0 1rem;
+    border-radius: 12px;
+  }
+  
+  .legal-title {
+    font-size: 1.5rem;
+    padding: 1.5rem;
+  }
+  
+  .legal-updated {
+    padding: 0.8rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .legal-section {
+    padding: 1.5rem;
+  }
+  
+  .legal-section h2 {
+    font-size: 1.2rem;
+  }
+  
+  .legal-section h3 {
+    font-size: 1rem;
+  }
+  
+  .info-row {
+    flex-direction: column;
+  }
+  
+  .info-label {
+    min-width: auto;
+    border-bottom: 1px solid #d1d5db;
+  }
+  
+  .legal-footer {
+    padding: 1.5rem;
+  }
+  
+  .legal-back-btn {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}

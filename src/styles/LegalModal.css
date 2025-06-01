@@ -1,0 +1,167 @@
+/* LegalModal.css */
+.legal-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.legal-modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.legal-modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.legal-modal-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.legal-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.legal-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.legal-modal-content {
+  padding: 2rem;
+}
+
+.legal-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.legal-link {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: #f8f9ff;
+  border: 2px solid #e6e9ff;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #4c51bf;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.legal-link:hover {
+  background: #e6e9ff;
+  border-color: #667eea;
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.legal-link:active {
+  transform: translateX(2px);
+}
+
+.company-info {
+  background: linear-gradient(135deg, #f8f9ff 0%, #e6e9ff 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+}
+
+.company-info h4 {
+  margin: 0 0 1rem 0;
+  color: #4c51bf;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.company-info p {
+  margin: 0.5rem 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .legal-modal-backdrop {
+    padding: 0.5rem;
+  }
+  
+  .legal-modal {
+    max-height: 90vh;
+  }
+  
+  .legal-modal-header {
+    padding: 1rem;
+  }
+  
+  .legal-modal-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .legal-modal-content {
+    padding: 1.5rem;
+  }
+  
+  .legal-link {
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+  
+  .company-info {
+    padding: 1rem;
+  }
+  
+  .company-info h4 {
+    font-size: 1rem;
+  }
+  
+  .company-info p {
+    font-size: 0.85rem;
+  }
+}

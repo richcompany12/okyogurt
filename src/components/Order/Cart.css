@@ -1,0 +1,389 @@
+/* src/components/Order/Cart.css */
+
+.cart {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 빈 장바구니 */
+.cart.empty {
+  padding: 24px;
+}
+
+.cart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #6c757d;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.cart-empty p {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.cart-empty small {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* 장바구니 헤더 */
+.cart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f3f4;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.cart-header:hover {
+  background: #f8f9fa;
+}
+
+.cart-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.cart-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.item-count {
+  background: #667eea;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.expand-btn {
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  transition: color 0.2s ease;
+}
+
+.expand-btn:hover {
+  color: #333;
+}
+
+/* 장바구니 콘텐츠 */
+.cart-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.cart-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px;
+  max-height: 400px;
+}
+
+/* 장바구니 아이템 */
+.cart-item {
+  display: grid;
+  grid-template-columns: 50px 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.item-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-info {
+  min-width: 0;
+}
+
+.item-name {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-price {
+  margin: 0;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.item-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 20px;
+  padding: 2px;
+}
+
+.quantity-btn {
+  background: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #667eea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.quantity-btn:hover {
+  background: #667eea;
+  color: white;
+  transform: scale(1.1);
+}
+
+.quantity {
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  min-width: 24px;
+  text-align: center;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.remove-btn:hover {
+  background: #ffebee;
+}
+
+.item-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: #667eea;
+  text-align: right;
+  min-width: 70px;
+}
+
+/* 장바구니 하단 */
+.cart-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #f1f3f4;
+  background: #f8f9fa;
+  border-radius: 0 0 16px 16px;
+}
+
+.total-section {
+  margin-bottom: 16px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+}
+
+.total-row span:first-child {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.total-price {
+  color: #333;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.proceed-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.proceed-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* 축소된 상태 하단 */
+.cart-collapsed-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid #f1f3f4;
+  background: #f8f9fa;
+  border-radius: 0 0 16px 16px;
+}
+
+.collapsed-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.proceed-btn-collapsed {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.proceed-btn-collapsed:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* 스크롤바 스타일링 */
+.cart-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cart-items::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 3px;
+}
+
+.cart-items::-webkit-scrollbar-thumb {
+  background: #dee2e6;
+  border-radius: 3px;
+}
+
+.cart-items::-webkit-scrollbar-thumb:hover {
+  background: #ced4da;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .cart {
+    position: static;
+    max-height: none;
+    margin-top: 20px;
+  }
+  
+  .cart-header {
+    padding: 16px 20px;
+  }
+  
+  .cart-items {
+    padding: 12px 20px;
+    max-height: 300px;
+  }
+  
+  .cart-item {
+    grid-template-columns: 45px 1fr auto;
+    gap: 10px;
+    padding: 12px 0;
+  }
+  
+  .item-total {
+    grid-column: 2 / 4;
+    text-align: right;
+    margin-top: 8px;
+    font-size: 16px;
+  }
+  
+  .item-controls {
+    flex-direction: row;
+    gap: 12px;
+  }
+  
+  .cart-footer,
+  .cart-collapsed-footer {
+    padding: 16px 20px;
+  }
+  
+  .proceed-btn {
+    padding: 14px;
+    font-size: 15px;
+  }
+  
+  .quantity-controls {
+    padding: 1px;
+  }
+  
+  .quantity-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+  
+  .quantity {
+    padding: 0 8px;
+    font-size: 13px;
+  }
+}

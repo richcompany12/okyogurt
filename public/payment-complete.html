@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>결제 완료</title>
+</head>
+<body>
+    <h1>결제 처리 중...</h1>
+    <p>잠시만 기다려주세요.</p>
+    
+    <script>
+        // URL에서 결제 결과 파라미터 추출
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('paymentId');
+        const code = urlParams.get('code');
+        
+        if (code === null || code === '0') {
+            // 결제 성공
+            alert('결제가 완료되었습니다!');
+            // 메인 페이지로 돌아가기
+            window.location.href = '/';
+        } else {
+            // 결제 실패
+            alert('결제에 실패했습니다.');
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>
