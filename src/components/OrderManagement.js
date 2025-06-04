@@ -127,28 +127,58 @@ const sendCustomerConfirmationSMS = async ({ phone, deliveryTime, orderNumber, s
 };
 
   // 주문 취소 처리
-  const handleCancelOrder = async (order) => {
-    if (!cancelReason.trim()) {
-      alert('취소 사유를 입력해주세요.');
-      return;
-    }
+ const handleCancelOrder = async (order) => {
+  if (!cancelReason.trim()) {
+    alert('취소 사유를 입력해주세요.');
+    return;
+  }
 
-    setIsProcessing(true);
+  setIsProcessing(true);
 
-    try {
-      // Firestore 주문 상태 업데이트
-      await updateDoc(doc(db, 'orders', order.id), {
-        status: 'cancelled',
-        cancelReason: cancelReason,
-        cancelledAt: new Date()
+  try {
+    // 🆕 1️⃣ 포트원 결제 취소 (먼저!)
+    if (order.paymentId) {
+      console.log('포트원 결제 취소 시작:', order.paymentId);
+      const cancelResponse = await fetch('https://cancelpayment-b245qv2hpq-uc.a.run.app', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentId: order.paymentId,
+          reason: cancelReason
+        })
       });
 
-// 고객 주문 취소 SMS 발송 함수
-const sendCustomerCancellationSMS = async ({ phone, orderNumber, cancelReason, storeName }) => {
-  try {
-    const SMS_ENDPOINT = 'https://sendtestsms-b245qv2hpq-uc.a.run.app';
-    
-    const customerMessage = `[${storeName}] 주문이 취소되었습니다 😔
+// 🆕 상세 로그 추가
+console.log('Cancel Response Status:', cancelResponse.status);
+console.log('Cancel Response OK:', cancelResponse.ok);
+const responseText = await cancelResponse.text();
+console.log('Cancel Response Body:', responseText);
+
+if (!cancelResponse.ok) {
+  console.error('포트원 취소 실패:', cancelResponse.status, responseText);
+  throw new Error(`포트원 결제 취소 실패: ${cancelResponse.status}`);
+}
+
+      if (!cancelResponse.ok) {
+        throw new Error('포트원 결제 취소 실패');
+      }
+      
+      console.log('포트원 결제 취소 성공');
+    }
+
+    // 2️⃣ Firestore 주문 상태 업데이트
+    await updateDoc(doc(db, 'orders', order.id), {
+      status: 'cancelled',
+      cancelReason: cancelReason,
+      cancelledAt: new Date()
+    });
+
+    // 고객 주문 취소 SMS 발송 함수
+    const sendCustomerCancellationSMS = async ({ phone, orderNumber, cancelReason, storeName }) => {
+      try {
+        const SMS_ENDPOINT = 'https://sendtestsms-b245qv2hpq-uc.a.run.app';
+        
+        const customerMessage = `[${storeName}] 주문이 취소되었습니다 😔
 
 📋 주문번호: ${orderNumber}
 ❌ 취소 사유: ${cancelReason}
@@ -156,45 +186,45 @@ const sendCustomerCancellationSMS = async ({ phone, orderNumber, cancelReason, s
 불편을 드려 죄송합니다.
 다음에 더 좋은 서비스로 찾아뵙겠습니다. 🙏`;
 
-    const response = await fetch(SMS_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        to: phone.replace(/-/g, ''),
-        message: customerMessage
-      })
+        const response = await fetch(SMS_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: phone.replace(/-/g, ''),
+            message: customerMessage
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`SMS API 오류: ${response.status}`);
+        }
+
+        console.log('고객 주문취소 SMS 발송 완료');
+      } catch (error) {
+        console.error('고객 취소 SMS 발송 오류:', error);
+        // SMS 실패해도 주문 취소는 계속 진행
+      }
+    };
+
+    // 3️⃣ 고객에게 주문 취소 SMS 발송
+    await sendCustomerCancellationSMS({
+      phone: order.phone,
+      orderNumber: order.orderNumber || order.id.slice(-6),
+      cancelReason: cancelReason,
+      storeName: order.storeName || '요거트퍼플'
     });
 
-    if (!response.ok) {
-      throw new Error(`SMS API 오류: ${response.status}`);
-    }
+    alert('주문이 취소되었습니다.');
+    setSelectedOrder(null);
+    setCancelReason('');
 
-    console.log('고객 주문취소 SMS 발송 완료');
   } catch (error) {
-    console.error('고객 취소 SMS 발송 오류:', error);
-    // SMS 실패해도 주문 취소는 계속 진행
+    console.error('주문 취소 오류:', error);
+    alert('주문 취소 중 오류가 발생했습니다.');
+  } finally {
+    setIsProcessing(false);
   }
 };
-
-      // 고객에게 주문 취소 SMS 발송
-await sendCustomerCancellationSMS({
-  phone: order.phone,
-  orderNumber: order.orderNumber || order.id.slice(-6),
-  cancelReason: cancelReason,
-  storeName: order.storeName || '요거트퍼플'
-});
-
-      alert('주문이 취소되었습니다.');
-      setSelectedOrder(null);
-      setCancelReason('');
-
-    } catch (error) {
-      console.error('주문 취소 오류:', error);
-      alert('주문 취소 중 오류가 발생했습니다.');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   // 배달 완료 처리
   const handleCompleteDelivery = async (order) => {
