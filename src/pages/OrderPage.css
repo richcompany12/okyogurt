@@ -179,17 +179,18 @@
   letter-spacing: -0.3px;
 }
 
+/* 🔥 메뉴 그리드 - 데스크톱은 3개, 모바일은 2개 */
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
 .menu-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -212,7 +213,7 @@
   right: 0;
   bottom: 0;
   background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-  border-radius: 20px;
+  border-radius: 16px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -229,8 +230,9 @@
 .menu-card:nth-child(5) { animation-delay: 0.5s; opacity: 0; }
 .menu-card:nth-child(6) { animation-delay: 0.6s; opacity: 0; }
 
+/* 🔥 메뉴 카드 이미지 - 목록에서 2/3 비율 */
 .menu-image {
-  height: 200px;
+  height: 120px; /* 🎯 조절 포인트 1: 목록 이미지 높이 */
   overflow: hidden;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   display: flex;
@@ -258,38 +260,47 @@
   height: 100%;
 }
 
+.image-placeholder svg {
+  width: 30px;
+  height: 30px;
+}
+
 .image-placeholder.large {
   height: 300px;
 }
 
+.image-placeholder.large svg {
+  width: 80px;
+  height: 80px;
+}
+
+/* 🔥 메뉴 정보 - 목록에서 1/3 비율 */
 .menu-info {
-  padding: 20px;
+  padding: 8px 12px; /* 🎯 조절 포인트 2: 텍스트 영역 패딩 */
 }
 
 .menu-name {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: #2d3436;
-  margin: 0 0 8px 0;
-  line-height: 1.3;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* 한 줄로 제한 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .menu-price {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: #6c5ce7;
-  margin: 0 0 8px 0;
+  margin: 0;
 }
 
+/* 🔥 목록에서 설명 숨김 */
 .menu-description {
-  font-size: 14px;
-  color: #636e72;
-  margin: 0;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  display: none; /* 목록에서는 완전히 숨김 */
 }
 
 /* 빈 메뉴 상태 */
@@ -364,6 +375,17 @@
   animation: modalSlideIn 0.3s ease;
 }
 
+.order-form-modal {
+  background: white;
+  border-radius: 24px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease;
+}
+
 @keyframes modalSlideIn {
   from {
     opacity: 0;
@@ -409,7 +431,7 @@
 }
 
 .modal-image {
-  height: 300px;
+  height: 400px;
   overflow: hidden;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   display: flex;
@@ -730,27 +752,44 @@
   background: #a4afb7;
 }
 
-/* 반응형 디자인 */
+/* 🔥 반응형 디자인 - 모바일 최적화 */
 @media (max-width: 768px) {
   .menu-container {
     padding: 16px;
   }
 
+  /* 🎯 모바일에서 2개씩 배치 */
   .menu-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 
   .menu-card {
-    border-radius: 16px;
+    border-radius: 12px;
   }
 
   .menu-image {
-    height: 180px;
+    height: 80px;
   }
 
   .menu-info {
-    padding: 16px;
+    padding: 10px;
+  }
+
+  .menu-name {
+    font-size: 13px;
+    margin: 0 0 3px 0;
+    -webkit-line-clamp: 1;
+  }
+
+  .menu-price {
+    font-size: 14px;
+    margin: 0 0 3px 0;
+  }
+
+  .menu-description {
+    font-size: 11px;
+    -webkit-line-clamp: 1;
   }
 
   .modal-overlay {
@@ -758,13 +797,14 @@
   }
 
   .menu-detail-modal,
-  .cart-modal {
+  .cart-modal,
+  .order-form-modal {
     border-radius: 16px;
     max-height: 90vh;
   }
 
   .modal-image {
-    height: 250px;
+    height: 200px;
     border-radius: 16px 16px 0 0;
   }
 
@@ -790,6 +830,7 @@
 
   .category-title {
     font-size: 18px;
+    margin: 0 0 16px 0;
   }
 }
 
@@ -802,12 +843,34 @@
     padding: 12px;
   }
 
+  /* 🎯 작은 모바일에서도 2개씩 유지 */
+  .menu-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
   .menu-image {
-    height: 160px;
+    height: 70px;
+  }
+
+  .menu-info {
+    padding: 8px;
+  }
+
+  .menu-name {
+    font-size: 12px;
+  }
+
+  .menu-price {
+    font-size: 13px;
+  }
+
+  .menu-description {
+    font-size: 10px;
   }
 
   .modal-image {
-    height: 220px;
+    height: 300px;
   }
 
   .floating-cart {
@@ -819,6 +882,35 @@
 
   .floating-total {
     font-size: 14px;
+  }
+}
+
+/* 🔥 더 작은 화면 (아이폰 SE 등) */
+@media (max-width: 375px) {
+  .menu-grid {
+    gap: 6px;
+  }
+
+  .menu-image {
+    height: 65px;
+  }
+
+  .menu-info {
+    padding: 6px;
+  }
+
+  .menu-name {
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .menu-price {
+    font-size: 12px;
+  }
+
+  .image-placeholder svg {
+    width: 24px;
+    height: 24px;
   }
 }
 

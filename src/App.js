@@ -10,6 +10,7 @@ import TermsPage from './components/TermsPage';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import RefundPolicy from './components/RefundPolicy';
 import CompanyInfo from './components/CompanyInfo';
+import PaymentComplete from './components/PaymentComplete';
 import './App.css';
 
 function AppContent() {
@@ -29,6 +30,7 @@ function AppContent() {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/refund" element={<RefundPolicy />} />
         <Route path="/company" element={<CompanyInfo />} />
+        <Route path="/payment-complete" element={<PaymentComplete />} />
         
         {/* 관리자 페이지 */}
         <Route path="/admin" element={

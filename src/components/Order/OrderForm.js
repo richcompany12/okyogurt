@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import * as PortOne from "@portone/browser-sdk/v2"; // 포트원 V2 SDK
 import './OrderForm.css';
 
-const OrderForm = ({ cart, totalPrice, onSubmit, onBack }) => {
+const OrderForm = ({ cart, totalPrice, storeId, onSubmit, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     phone: '',
@@ -58,6 +58,27 @@ const OrderForm = ({ cart, totalPrice, onSubmit, onBack }) => {
       // 결제 ID 생성
       const paymentId = `payment-${Date.now()}`;
       
+      // 전화번호 포맷팅
+      const formattedPhone = formData.phone.replace(/-/g, '').replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+      
+      // 🆕 결제 시작 전에 로컬스토리지 저장 (모바일 리디렉션 대비)
+      localStorage.setItem('cart', JSON.stringify(cart));
+      localStorage.setItem('customerInfo', JSON.stringify({
+        phone: formattedPhone,
+        tableNumber: formData.tableNumber.trim() || null,
+        specialRequests: formData.specialRequests.trim() || null
+      }));
+      localStorage.setItem('currentStoreId', storeId);
+      
+      console.log('=== 로컬스토리지 저장 완료 ===');
+      console.log('cart:', cart);
+      console.log('customerInfo:', {
+        phone: formattedPhone,
+        tableNumber: formData.tableNumber.trim() || null,
+        specialRequests: formData.specialRequests.trim() || null
+      });
+      console.log('storeId:', storeId);
+      
       console.log('=== 포트원 결제 시작 ===');
       console.log('결제 ID:', paymentId);
       console.log('결제 금액:', totalPrice);
@@ -79,11 +100,13 @@ const OrderForm = ({ cart, totalPrice, onSubmit, onBack }) => {
 
       console.log('결제 설정:', paymentConfig);
 
-      // 포트원 결제창 호출
+      // 포트원 결제창 호출 (모바일에서는 여기서 리디렉션됨!)
       const response = await PortOne.requestPayment(paymentConfig);
       
       console.log('포트원 응답:', response);
 
+      // 🔄 아래 코드는 PC에서만 실행됨 (모바일은 리디렉션으로 인해 실행 안됨)
+      
       // 결제 성공 확인
       if (response.code != null) {
         // 결제 실패
@@ -92,11 +115,8 @@ const OrderForm = ({ cart, totalPrice, onSubmit, onBack }) => {
         return;
       }
 
-      // 결제 성공
-      console.log('✅ 결제 성공:', response);
-      
-      // 전화번호 포맷팅
-      const formattedPhone = formData.phone.replace(/-/g, '').replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+      // 결제 성공 (PC에서만 실행)
+      console.log('✅ 결제 성공 (PC):', response);
       
       // 주문 정보 생성
       const customerInfo = {
@@ -109,9 +129,9 @@ const OrderForm = ({ cart, totalPrice, onSubmit, onBack }) => {
         paymentStatus: 'completed'
       };
 
-      console.log('주문 정보:', customerInfo);
+      console.log('주문 정보 (PC):', customerInfo);
 
-      // 상위 컴포넌트의 주문 저장 함수 호출
+      // 상위 컴포넌트의 주문 저장 함수 호출 (PC에서만 실행)
       await onSubmit(customerInfo);
 
     } catch (error) {
@@ -266,6 +286,7 @@ const OrderForm = ({ cart, totalPrice, onSubmit, onBack }) => {
             <h5>🔧 개발 정보</h5>
             <p>Store ID: {process.env.REACT_APP_PORTONE_STORE_ID}</p>
             <p>Channel Key: {process.env.REACT_APP_PORTONE_CHANNEL_KEY}</p>
+            <p>현재 storeId: {storeId}</p>
           </div>
         )}
       </div>

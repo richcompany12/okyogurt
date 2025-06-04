@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import OrderManagement from './OrderManagement';
-import SMSTest from './SMSTest';
 import StoreManagement from './StoreManagement';
 import MenuManagement from './StoreManagement/MenuManagement';
 import PointsManagement from '../pages/PointsManagement';
@@ -36,7 +35,6 @@ function AdminDashboard() {
   const menuItems = [
     { id: 'orders', name: '주문 관리', icon: '📋', adminOnly: true },
     { id: 'business', name: '영업시간 관리', icon: '🕐', adminOnly: true },
-    { id: 'sms', name: 'SMS 테스트', icon: '💬', adminOnly: true },
     { id: 'stores', name: '상점 관리', icon: '🏪', adminOnly: true },
     { id: 'menu', name: '메뉴 관리', icon: '🍦', adminOnly: true },
     { id: 'points', name: '포인트 내역', icon: '💎', adminOnly: false },
@@ -50,8 +48,6 @@ function AdminDashboard() {
         return <OrderManagement />;
       case 'business':
         return <BusinessHoursManagement />;
-      case 'sms':
-        return <SMSTest />;
       case 'stores':
         return <StoreManagement />;
       case 'menu':

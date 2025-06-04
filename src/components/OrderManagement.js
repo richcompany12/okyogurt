@@ -220,66 +220,209 @@ await sendCustomerCancellationSMS({
   };
 
   // 프린트 함수 추가
-  const handlePrintOrder = (order) => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>주문서 - ${order.orderNumber}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
-            .section { margin: 20px 0; }
-            .item { display: flex; justify-content: space-between; padding: 5px 0; }
-            .total { font-weight: bold; border-top: 1px solid #333; padding-top: 10px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h2>🍦 요거트퍼플</h2>
-            <p>주문번호: ${order.orderNumber}</p>
-          </div>
+const handlePrintOrder = (order) => {
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>주문서 - ${order.orderNumber}</title>
+        <style>
+          @page {
+            size: 80mm auto;
+            margin: 0;
+            orientation: portrait;
+          }
           
-          <div class="section">
-            <h3>📍 배달 정보</h3>
-            <p>상점: ${order.storeName || '정보 없음'}</p>
-            <p>테이블: ${order.tableNumber || '정보 없음'}</p>
-            <p>전화번호: ${order.phone}</p>
-            ${order.specialRequests ? `<p>요청사항: ${order.specialRequests}</p>` : ''}
-          </div>
+          @media print {
+            @page {
+              size: portrait;
+              margin: 0;
+            }
+            
+            body {
+              transform: rotate(0deg);
+              transform-origin: top left;
+            }
+          }
+          
+          body { 
+            font-family: 'Courier New', monospace;
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1.3;
+            margin: 0;
+            padding: 5mm;
+            width: 70mm;
+            color: #000000;
+            background: white;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          
+          .center { text-align: center; }
+          .left { text-align: left; }
+          .right { text-align: right; }
+          .bold { font-weight: bold; }
+          
+          .header {
+            text-align: center;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 5px;
+            margin-bottom: 8px;
+          }
+          
+          .store-name {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 3px;
+            color: #000000;
+          }
+          
+          .section {
+            margin: 8px 0;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 5px;
+          }
+          
+          .section:last-child {
+            border-bottom: none;
+          }
+          
+          .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px 0;
+            font-size: 20px;
+            font-weight: 700;
+          }
+          
+          .menu-item {
+            margin: 1px 0;
+            font-size: 20px;
+            font-weight: 700;
+          }
+          
+          .total-row {
+            font-weight: 900;
+            font-size: 24px;
+            border-top: 2px solid #000;
+            padding-top: 3px;
+            margin-top: 5px;
+            color: #000000;
+          }
+          
+          .customer-info {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 2px 0;
+            color: #000000;
+          }
+          
+          .special-requests {
+            font-size: 10px;
+            border: 1px solid #ccc;
+            padding: 3px;
+            margin: 5px 0;
+            word-wrap: break-word;
+          }
+          
+          .footer {
+            text-align: center;
+            font-size: 10px;
+            margin-top: 10px;
+            color: #666;
+          }
+        </style>
+      </head>
+      <body>
+        <!-- 헤더 (상점명) -->
+        <div class="header">
+          <div class="store-name">🍦 ${order.storeName || '요거트퍼플'}</div>
+          <div>주문번호: ${order.orderNumber || order.id.slice(-6)}</div>
+        </div>
 
-          <div class="section">
-            <h3>📋 주문 내역</h3>
-            ${order.items ? order.items.map(item => 
-              `<div class="item">
-                <span>${item.name} x${item.quantity}</span>
-                <span>${(item.price * item.quantity).toLocaleString()}원</span>
+        <!-- 고객 정보 -->
+        <div class="section">
+          <div class="bold center">📞 고객 정보</div>
+          <div class="customer-info">전화: ${order.phone}</div>
+          ${order.tableNumber ? `<div class="customer-info">테이블: ${order.tableNumber}</div>` : ''}
+        </div>
+
+        <!-- 주문 메뉴 (필수) -->
+        <div class="section">
+          <div class="bold center">📋 주문 메뉴</div>
+          ${order.items && order.items.length > 0 ? 
+            order.items.map(item => 
+              `<div class="menu-item">
+                <div class="row">
+                  <span>${item.name}</span>
+                  <span>x${item.quantity}</span>
+                </div>
+                <div class="row">
+                  <span>단가: ${item.price?.toLocaleString()}원</span>
+                  <span>${(item.price * item.quantity)?.toLocaleString()}원</span>
+                </div>
               </div>`
-            ).join('') : '<p>메뉴 정보 없음</p>'}
-            <div class="total">
-              <div class="item">
-                <span>총 금액</span>
-                <span>${order.amount?.toLocaleString()}원</span>
-              </div>
+            ).join('') 
+            : '<div class="menu-item">메뉴 정보 없음</div>'
+          }
+          
+          <!-- 총액 -->
+          <div class="total-row">
+            <div class="row">
+              <span>총 금액</span>
+              <span>${order.amount?.toLocaleString() || '0'}원</span>
             </div>
           </div>
+        </div>
 
-          <div class="section">
-            <p>주문시간: ${formatTime(order.createdAt)}</p>
-            ${order.deliveryTime ? `<p>배달예정: ${order.deliveryTime}분</p>` : ''}
-          </div>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+        <!-- 주문 시각 -->
+        <div class="section">
+          <div class="bold center">⏰ 주문 정보</div>
+          <div class="customer-info">주문시간: ${formatTime(order.createdAt)}</div>
+          ${order.deliveryTime ? `<div class="customer-info">배달예정: ${order.deliveryTime}분 후</div>` : ''}
+          ${order.status === 'paid' ? '<div class="customer-info">💳 결제완료</div>' : ''}
+        </div>
+
+        <!-- 요청사항 (있을 경우만) -->
+        ${order.specialRequests ? `
+        <div class="section">
+          <div class="bold center">📝 요청사항</div>
+          <div class="special-requests">${order.specialRequests}</div>
+        </div>
+        ` : ''}
+
+        <!-- 푸터 -->
+        <div class="footer">
+          <div>━━━━━━━━━━━━━━━━━━━━</div>
+          <div>맛있게 드세요! 🍦</div>
+          <div>${new Date().toLocaleString('ko-KR')}</div>
+        </div>
+      </body>
+    </html>
+  `);
+  
+  printWindow.document.close();
+  
+  // 프린트 실행
+  printWindow.onload = function() {
     printWindow.print();
+    printWindow.close();
   };
+};
 
-  const formatTime = (timestamp) => {
-    if (!timestamp) return '';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleString('ko-KR');
-  };
+
+// formatTime 함수도 같이 사용 (이미 있으면 그대로 두세요)
+const formatTime = (timestamp) => {
+  if (!timestamp) return '';
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  return date.toLocaleString('ko-KR', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
 
  const getStatusBadge = (status) => {
   const statusMap = {
