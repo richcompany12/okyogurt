@@ -225,7 +225,7 @@ const OrderPage = () => {
 
   // 배송비 계산
   const getDeliveryFee = () => {
-    return getTotalAmount() >= 12000 ? 0 : 10;
+    return getTotalAmount() >= 11000 ? 0 : 10;
   };
 
   // 카테고리별 메뉴 그룹화
@@ -775,9 +775,9 @@ if (!businessStatus.isOpen) {
                   setShowCart(false);
                   setShowOrderForm(true);
                 }}
-                disabled={cart.length === 0 || getTotalAmount() < 12000}
+                disabled={cart.length === 0 || getTotalAmount() < 11000}
               >
-                {getTotalAmount() < 12000 ? '12,000원 이상 주문가능' : `${getTotalAmount().toLocaleString()}원 주문하기`}
+                {getTotalAmount() < 11000 ? '11,000원 이상 주문가능' : `${getTotalAmount().toLocaleString()}원 주문하기`}
               </button>
             </div>
           </div>

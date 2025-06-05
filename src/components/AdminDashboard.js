@@ -7,11 +7,17 @@ import MenuManagement from './StoreManagement/MenuManagement';
 import PointsManagement from '../pages/PointsManagement';
 import BusinessHoursManagement from './BusinessHoursManagement';
 import StatsDashboard from './StatsDashboard';
-import AccountManagement from './AccountManagement'; // 🆕 새로 추가
+import AccountManagement from './AccountManagement';
+import NotificationManager from './NotificationManager'; // 🆕 알림 시스템 추가
 import './AdminDashboard.css';
 
 function AdminDashboard() {
   const { currentUser, userRole, logout, isAdmin, isPartner } = useAuth();
+
+  // 🔔 알림 토글 상태 (localStorage에서 읽기)
+  const [notificationEnabled, setNotificationEnabled] = useState(() => {
+    return localStorage.getItem('adminNotificationEnabled') === 'true';
+  });
 
   // 권한에 따른 기본 메뉴 설정
   const getDefaultMenu = () => {
@@ -23,6 +29,20 @@ function AdminDashboard() {
   };
 
   const [activeMenu, setActiveMenu] = useState(getDefaultMenu());
+
+  // 🔔 알림 토글 핸들러
+  const handleNotificationToggle = () => {
+    const newState = !notificationEnabled;
+    setNotificationEnabled(newState);
+    localStorage.setItem('adminNotificationEnabled', newState.toString());
+    
+    console.log('🔔 알림 토글:', newState ? 'ON' : 'OFF');
+    
+    if (newState) {
+      // 토글을 켰을 때 페이지 새로고침으로 NotificationManager 활성화
+      window.location.reload();
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -38,7 +58,7 @@ function AdminDashboard() {
     { id: 'stores', name: '상점 관리', icon: '🏪', adminOnly: true },
     { id: 'menu', name: '메뉴 관리', icon: '🍦', adminOnly: true },
     { id: 'points', name: '포인트 내역', icon: '💎', adminOnly: false },
-    { id: 'accounts', name: '계정 관리', icon: '👤', adminOnly: true }, // 🆕 새로 추가
+    { id: 'accounts', name: '계정 관리', icon: '👤', adminOnly: true },
     { id: 'stats', name: '통계 분석', icon: '📊', adminOnly: true },
   ];
 
@@ -54,7 +74,7 @@ function AdminDashboard() {
         return <MenuManagement />;
       case 'points':
         return <PointsManagement />;
-      case 'accounts': // 🆕 새로 추가
+      case 'accounts':
         return <AccountManagement />;
       case 'stats':
         return <StatsDashboard />;
@@ -65,6 +85,9 @@ function AdminDashboard() {
 
   return (
     <div className="admin-container">
+      {/* 🔔 알림 시스템 - 토글이 ON일 때만 활성화 */}
+      {isAdmin && notificationEnabled && <NotificationManager />}
+
       {/* 사이드바 */}
       <div className="admin-sidebar">
         <div className="admin-header">
@@ -75,6 +98,26 @@ function AdminDashboard() {
               {userRole === 'super_admin' ? '메인 관리자' : 
                userRole === 'store_owner' ? '제휴상점 사장' : '관리자'}
             </div>
+            
+            {/* 🔔 알림 토글 - 슈퍼어드민만 보임 */}
+            {isAdmin && (
+              <div className="notification-toggle">
+                <div className="toggle-container">
+                  <span className="toggle-label">🔔 주문 알림</span>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={notificationEnabled}
+                      onChange={handleNotificationToggle}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                  <span className="toggle-status">
+                    {notificationEnabled ? 'ON' : 'OFF'}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

@@ -217,3 +217,94 @@
     font-size: 14px;
   }
 }
+
+/* AdminDashboard.css에 추가할 스타일 */
+
+/* 🔔 알림 토글 컨테이너 */
+.notification-toggle {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e1e5e9;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.toggle-label {
+  font-weight: 500;
+  color: #495057;
+  white-space: nowrap;
+}
+
+/* 🎛️ 토글 스위치 */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border-radius: 24px;
+  transition: 0.3s;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* ON 상태 */
+input:checked + .toggle-slider {
+  background-color: #28a745;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+/* 호버 효과 */
+.toggle-slider:hover {
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
+}
+
+/* 상태 텍스트 */
+.toggle-status {
+  font-weight: 600;
+  font-size: 12px;
+  min-width: 24px;
+  text-align: center;
+}
+
+input:checked + .toggle-slider + .toggle-status {
+  color: #28a745;
+}
+
+input:not(:checked) + .toggle-slider + .toggle-status {
+  color: #6c757d;
+}

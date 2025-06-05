@@ -137,13 +137,6 @@ const AccountManagement = () => {
     try {
       setLoading(true);
 
-      // Firebase Auth에 사용자 생성 (임시)
-      const userCredential = await createUserWithEmailAndPassword(
-        auth, 
-        `${formData.email}@temp.com`, // 임시 이메일 형식
-        formData.password
-      );
-
       // Firestore에 사용자 정보 저장
       const userData = {
         email: formData.email, // 실제 입력한 아이디 저장
