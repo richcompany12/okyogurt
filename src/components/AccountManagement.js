@@ -82,7 +82,7 @@ const AccountManagement = () => {
     }
   };
 
-  // 이메일 중복 체크
+  // 이메일 중복 체크 (Firestore 기준)
   const checkEmailExists = async (email) => {
     const userQuery = query(
       collection(db, 'users'),
@@ -96,20 +96,20 @@ const AccountManagement = () => {
   const validateForm = async () => {
     const errors = {};
 
-    // 아이디(이메일) 검사
+    // 이메일 검사
     if (!formData.email.trim()) {
-      errors.email = '아이디를 입력해주세요.';
-    } else if (formData.email.length < 3) {
-      errors.email = '아이디는 3자 이상이어야 합니다.';
+      errors.email = '이메일을 입력해주세요.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = '올바른 이메일 형식을 입력해주세요.';
     } else if (await checkEmailExists(formData.email)) {
-      errors.email = '이미 사용중인 아이디입니다.';
+      errors.email = '이미 사용중인 이메일입니다.';
     }
 
-    // 비밀번호 검사
+    // 비밀번호 검사 (6자 이상, 숫자/문자 제한 없음)
     if (!formData.password) {
       errors.password = '비밀번호를 입력해주세요.';
-    } else if (formData.password.length < 6 || !/^\d+$/.test(formData.password)) {
-      errors.password = '비밀번호는 숫자 6자리 이상이어야 합니다.';
+    } else if (formData.password.length < 6) {
+      errors.password = '비밀번호는 6자 이상이어야 합니다.';
     }
 
     // 이름 검사
@@ -137,9 +137,17 @@ const AccountManagement = () => {
     try {
       setLoading(true);
 
-      // Firestore에 사용자 정보 저장
+      // 1. Firebase Auth 계정 생성
+      const authResult = await createUserWithEmailAndPassword(
+        auth, 
+        formData.email, 
+        formData.password
+      );
+      console.log("✅ Firebase Auth 계정 생성:", authResult.user.uid);
+
+      // 2. Firestore에 사용자 정보 저장
       const userData = {
-        email: formData.email, // 실제 입력한 아이디 저장
+        email: formData.email,
         name: formData.name,
         role: formData.role,
         storeId: formData.role === 'store_owner' ? formData.storeId : null,
@@ -149,6 +157,7 @@ const AccountManagement = () => {
       };
 
       await addDoc(collection(db, 'users'), userData);
+      console.log("✅ Firestore 사용자 문서 생성 완료");
 
       alert('계정이 성공적으로 생성되었습니다!');
       setShowCreateModal(false);
@@ -163,10 +172,15 @@ const AccountManagement = () => {
     } catch (error) {
       console.error('계정 생성 오류:', error);
       
+      // Firebase Auth 에러 처리
       if (error.code === 'auth/email-already-in-use') {
-        setFormErrors({ email: '이미 사용중인 아이디입니다.' });
+        setFormErrors({ email: '이미 사용중인 이메일입니다.' });
+      } else if (error.code === 'auth/weak-password') {
+        setFormErrors({ password: '비밀번호가 너무 약합니다.' });
+      } else if (error.code === 'auth/invalid-email') {
+        setFormErrors({ email: '올바르지 않은 이메일 형식입니다.' });
       } else {
-        alert('계정 생성 중 오류가 발생했습니다.');
+        alert('계정 생성 중 오류가 발생했습니다: ' + error.message);
       }
     } finally {
       setLoading(false);
@@ -245,7 +259,7 @@ const AccountManagement = () => {
           <table>
             <thead>
               <tr>
-                <th>아이디</th>
+                <th>이메일</th>
                 <th>이름</th>
                 <th>역할</th>
                 <th>연결된 상점</th>
@@ -313,13 +327,13 @@ const AccountManagement = () => {
 
             <form onSubmit={handleCreateAccount} className="create-form">
               <div className="form-group">
-                <label>아이디 *</label>
+                <label>이메일 *</label>
                 <input
-                  type="text"
+                  type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="아이디 입력 (이메일 형식 아니어도 됨)"
+                  placeholder="example@gmail.com"
                   className={formErrors.email ? 'error' : ''}
                 />
                 {formErrors.email && (
@@ -334,7 +348,7 @@ const AccountManagement = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  placeholder="숫자 6자리 이상"
+                  placeholder="6자 이상 (숫자/문자 제한 없음)"
                   className={formErrors.password ? 'error' : ''}
                 />
                 {formErrors.password && (
@@ -388,6 +402,9 @@ const AccountManagement = () => {
                   {formErrors.storeId && (
                     <span className="error-message">{formErrors.storeId}</span>
                   )}
+                  <small style={{color: '#666', fontSize: '12px', display: 'block', marginTop: '5px'}}>
+                    💡 동일한 상점에 여러 계정을 연결할 수 있습니다
+                  </small>
                 </div>
               )}
 

@@ -1,7 +1,6 @@
 // src/components/Login.js
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-// import './Login.css'; // CSS 파일이 없어서 주석 처리
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -9,7 +8,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { login } = useAuth(); // signup 제거 (관리자만 사용)
+  const { login } = useAuth();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -34,14 +33,13 @@ function Login() {
     } catch (error) {
       console.error('❌ 로그인 오류:', error);
       
-      if (error.code === 'auth/user-not-found') {
+      // Firestore 전용 오류 처리
+      if (error.message === '등록되지 않은 사용자입니다.') {
         setError('등록되지 않은 이메일입니다.');
-      } else if (error.code === 'auth/wrong-password') {
+      } else if (error.message === '비밀번호가 올바르지 않습니다.') {
         setError('비밀번호가 올바르지 않습니다.');
-      } else if (error.code === 'auth/invalid-email') {
-        setError('올바르지 않은 이메일 형식입니다.');
       } else {
-        setError('로그인 중 오류가 발생했습니다.');
+        setError('로그인 중 오류가 발생했습니다: ' + error.message);
       }
     } finally {
       setLoading(false);
@@ -147,7 +145,7 @@ function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@test.com"
+              placeholder="kth2798@gmail.com"
               style={styles.input}
               required
             />
@@ -174,12 +172,12 @@ function Login() {
           </button>
         </form>
 
-        {/* 테스트 계정 정보 */}
+        {/* 개발자 정보 */}
         <div style={styles.testAccount}>
-          <h4 style={{margin: '0 0 10px 0'}}>🧪 테스트 계정</h4>
+          <h4 style={{margin: '0 0 10px 0'}}>🧪 개발 및 유지보수 </h4>
           <div>
             <strong>관리자:</strong><br/>
-            admin@test.com / 123456
+            kso121258@gmail.com / 리치컴퍼니
           </div>
         </div>
       </div>
