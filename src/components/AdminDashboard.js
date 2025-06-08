@@ -19,6 +19,9 @@ function AdminDashboard() {
     return localStorage.getItem('adminNotificationEnabled') === 'true';
   });
 
+  // 🆕 모바일 사이드바 토글 상태 (새로 추가)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   // 권한에 따른 기본 메뉴 설정
   const getDefaultMenu = () => {
     if (isAdmin) {
@@ -39,8 +42,24 @@ function AdminDashboard() {
     console.log('🔔 알림 토글:', newState ? 'ON' : 'OFF');
     
     if (newState) {
-      // 토글을 켰을 때 페이지 새로고침으로 NotificationManager 활성화
-      window.location.reload();
+      console.log('🔔 알림 활성화됨 - 새로고침 없이 진행');
+    }
+  };
+
+  // 🆕 모바일 메뉴 관련 함수들 (새로 추가)
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleMenuClick = (menuId) => {
+    setActiveMenu(menuId);
+    // 모바일에서 메뉴 선택 시 사이드바 자동 닫기
+    if (window.innerWidth <= 768) {
+      closeMobileMenu();
     }
   };
 
@@ -88,8 +107,33 @@ function AdminDashboard() {
       {/* 🔔 알림 시스템 - 토글이 ON일 때만 활성화 */}
       {isAdmin && notificationEnabled && <NotificationManager />}
 
-      {/* 사이드바 */}
-      <div className="admin-sidebar">
+      {/* 🆕 모바일 헤더 (새로 추가) */}
+      <div className="mobile-header">
+        <button 
+          className="mobile-menu-button"
+          onClick={toggleMobileMenu}
+          aria-label="메뉴 열기"
+        >
+          <span className="hamburger-line"></span>
+          <span className="hamburger-line"></span>
+          <span className="hamburger-line"></span>
+        </button>
+        <h1 className="mobile-title">🍦 요거트퍼플</h1>
+        <div className="mobile-user-info">
+          {currentUser?.email?.split('@')[0]}
+        </div>
+      </div>
+
+      {/* 🆕 모바일 오버레이 (새로 추가) */}
+      {isMobileMenuOpen && (
+        <div 
+          className="sidebar-overlay"
+          onClick={closeMobileMenu}
+        ></div>
+      )}
+
+      {/* 기존 사이드바 (클래스만 추가, 내용은 그대로) */}
+      <div className={`admin-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="admin-header">
           <h1>🍦 요거트퍼플</h1>
           <div className="admin-info">
@@ -132,7 +176,7 @@ function AdminDashboard() {
               <button
                 key={item.id}
                 className={`nav-item ${activeMenu === item.id ? 'active' : ''}`}
-                onClick={() => setActiveMenu(item.id)}
+                onClick={() => handleMenuClick(item.id)}
               >
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-text">{item.name}</span>
@@ -148,7 +192,7 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* 메인 콘텐츠 */}
+      {/* 기존 메인 콘텐츠 (완전히 그대로) */}
       <div className="admin-main">
         <div className="admin-content">
           {renderContent()}

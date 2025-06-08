@@ -575,7 +575,7 @@ if (!businessStatus.isOpen) {
 >
   {store.name}
 </h1>
-            <p className="delivery-info">최소주문 12,000원 이상 무료배달</p>
+            <p className="delivery-info">최소주문 11,000원 이상 무료배달</p>
           </div>
 
           {cart.length > 0 && (

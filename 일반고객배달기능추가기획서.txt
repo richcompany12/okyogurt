@@ -1,0 +1,314 @@
+# 요거트퍼플 일반고객 직배송 기능 기획서
+
+## 📋 프로젝트 개요
+
+### 현재 상황
+- **기존 시스템**: 제휴상점(삼겹살집, 치킨집 등) 테이블 → 아이스크림 주문 → 요거트퍼플이 해당 상점 테이블로 배달
+- **고객 접점**: 제휴상점 테이블에 부착된 QR코드
+
+### 추가하고 싶은 기능
+- **일반고객 직배송**: 고객 집 주소로 직접 배달
+- **목적**: 배달의민족, 쿠팡이츠 등 플랫폼 수수료 절약 + 고객과 직접 연결
+- **마케팅 방법**: 기존 배달앱 주문시 전단지/자석스티커에 우리 앱 QR코드 첨부
+
+---
+
+## 🎯 핵심 요구사항
+
+### 1. 배달 타입 구분
+```
+제휴상점 배달 (기존)
+├── QR코드 → storeId (제휴상점 ID)
+├── 입력: 전화번호, 테이블번호(선택), 요청사항(선택)
+└── 배달지: 제휴상점 테이블
+
+일반고객 직배송 (신규)
+├── QR코드 → storeId (가상상점 ID: "yogurt-purple-direct")
+├── 입력: 전화번호, 배달주소(필수), 요청사항(선택)
+└── 배달지: 고객 집 주소
+```
+
+### 2. 주소 입력 시스템
+- **주소 검색**: 다음(카카오) 주소 API 사용
+- **상세주소**: 동호수, 층수, 출입방법 등
+- **좌표 변환**: 주소 → 위도/경도 변환 (카카오 지도 API)
+- **거리 계산**: 매장 좌표 기준 직선거리 계산 (Haversine 공식)
+
+### 3. 배송비 계산 시스템
+```
+배달권역: 현재 배달의민족 서비스 지역과 동일
+
+배송비 구간:
+├── 반경 1.5km 이내: 무료배송
+├── 1.5km - 3km: 2,000원
+├── 3km - 5km: 3,000원
+└── 5km 초과: 배달불가 (추후 확장 가능)
+```
+
+### 4. 최소 주문금액 차별화
+```
+제휴상점: 11,000원 (기존 유지)
+일반고객: 15,000원 (배달비용 고려)
+```
+
+---
+
+## 🔧 기술 구현 방안
+
+### 파일 구조 변경
+
+#### 수정할 파일 (3개)
+1. **OrderPage.js**
+   - `storeId` 기반 배달타입 판별 로직 추가
+   - 조건부 UI 렌더링
+
+2. **OrderForm.js**
+   - 조건부 입력 필드 (테이블번호 vs 주소입력)
+   - 배송비 계산 로직 연동
+   - 최소주문금액 검증 로직
+
+3. **OrderForm.css**
+   - 주소입력 관련 스타일링 추가
+
+#### 생성할 파일 (3개)
+1. **AddressInput.js**
+   ```javascript
+   // 주소입력 전용 컴포넌트
+   - 다음 주소 API 팝업
+   - 상세주소 입력
+   - 주소 유효성 검증
+   ```
+
+2. **deliveryUtils.js**
+   ```javascript
+   // 배송 관련 유틸리티
+   - calculateDistance(lat1, lng1, lat2, lng2)
+   - getDeliveryFee(distance)
+   - getCoordinatesFromAddress(address)
+   - validateDeliveryArea(coordinates)
+   ```
+
+3. **constants.js**
+   ```javascript
+   // 설정값 관리
+   - STORE_COORDINATES: { lat: 37.xxxx, lng: 127.xxxx }
+   - DELIVERY_FEE_RULES: { ... }
+   - MIN_ORDER_AMOUNTS: { ... }
+   - DIRECT_DELIVERY_STORE_ID: "yogurt-purple-direct"
+   ```
+
+### 핵심 로직 구현
+
+#### 1. 배달타입 판별
+```javascript
+// OrderPage.js
+const isDirectDelivery = storeId === DIRECT_DELIVERY_STORE_ID;
+const minOrderAmount = isDirectDelivery ? 15000 : 11000;
+```
+
+#### 2. 조건부 UI 렌더링
+```javascript
+// OrderForm.js
+{isDirectDelivery ? (
+  <AddressInput 
+    onAddressChange={handleAddressChange}
+    onDeliveryFeeChange={setDeliveryFee}
+  />
+) : (
+  <TableNumberInput />
+)}
+```
+
+#### 3. 거리 및 배송비 계산
+```javascript
+// deliveryUtils.js
+export const calculateDistance = (lat1, lng1, lat2, lng2) => {
+  // Haversine 공식으로 km 단위 거리 반환
+};
+
+export const getDeliveryFee = (distance) => {
+  if (distance <= 1.5) return 0;
+  if (distance <= 3) return 2000;
+  if (distance <= 5) return 3000;
+  return null; // 배달불가
+};
+```
+
+#### 4. 주문 데이터 구조 확장
+```javascript
+// 기존 주문 데이터 + 추가 필드
+const orderData = {
+  // 기존 필드들...
+  deliveryType: isDirectDelivery ? "direct" : "partner",
+  deliveryAddress: isDirectDelivery ? {
+    roadAddress: "...",
+    jibunAddress: "...",
+    detailAddress: "...",
+    coordinates: { lat: x.xxxx, lng: y.yyyy }
+  } : null,
+  deliveryFee: isDirectDelivery ? calculateFee : 0,
+  // ...
+};
+```
+
+---
+
+## 🔑 외부 API 연동
+
+### 1. 다음(카카오) 주소 검색 API
+```javascript
+// 무료 사용 가능, 간단한 스크립트 로딩
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+```
+
+### 2. 카카오 지도 API (좌표 변환)
+```javascript
+// REST API 방식 사용 (월 300,000건 무료)
+// 주소 → 좌표 변환용
+```
+
+---
+
+## 🚀 구현 단계별 계획
+
+### Phase 1: 핵심 기능 (2-3일)
+1. **배달타입 판별 로직** 구현
+2. **AddressInput 컴포넌트** 개발
+3. **거리계산 및 배송비** 로직 구현
+4. **조건부 UI** 연동
+
+### Phase 2: 완성도 향상 (1-2일)
+1. **에러 처리** 및 유효성 검증
+2. **로딩 상태** UI 개선
+3. **스타일링** 완성
+4. **테스트** 및 버그 수정
+
+### Phase 3: 배포 및 최적화 (1일)
+1. **가상상점 설정** 및 QR코드 생성
+2. **실제 배달권역** 테스트
+3. **성능 최적화**
+4. **모니터링** 설정
+
+---
+
+## 📊 데이터베이스 스키마 확장
+
+### Orders 컬렉션 추가 필드
+```javascript
+{
+  // 기존 필드들...
+  deliveryType: "direct" | "partner",
+  deliveryAddress: {
+    roadAddress: String,
+    jibunAddress: String, 
+    detailAddress: String,
+    postalCode: String,
+    coordinates: {
+      lat: Number,
+      lng: Number
+    }
+  } | null,
+  deliveryFee: Number,
+  distance: Number, // km 단위
+  // ...
+}
+```
+
+---
+
+## 🎨 UX/UI 개선사항
+
+### 주소입력 플로우
+```
+1. [주소 검색하기] 버튼 클릭
+   ↓
+2. 다음 주소 팝업에서 주소 선택
+   ↓  
+3. 상세주소 입력 (필수)
+   ↓
+4. 배송비 자동 계산 및 표시
+   ↓
+5. 배달가능 여부 확인
+```
+
+### 배송비 표시
+```
+📍 배달 정보
+├── 주소: 서울시 강남구 테헤란로 123
+├── 거리: 2.1km
+├── 배송비: 2,000원
+└── 예상 배달시간: 20-30분
+```
+
+---
+
+## ⚠️ 주의사항 및 고려사항
+
+### 1. 기존 시스템 안정성
+- **제휴상점 주문은 100% 기존 로직 유지**
+- **조건부 처리로 신규 기능과 완전 분리**
+- **롤백 가능한 구조로 설계**
+
+### 2. 성능 최적화
+- **API 호출 최소화** (주소 변경시에만 좌표 변환)
+- **거리 계산 캐싱** (같은 주소 재계산 방지)
+- **배달불가 지역 빠른 판별**
+
+### 3. 에러 처리
+- **API 호출 실패시** 대체 플로우
+- **GPS/주소 변환 실패시** 사용자 안내
+- **배달불가 지역** 명확한 안내 메시지
+
+### 4. 확장성
+- **배송비 구간 설정** 관리자 페이지에서 수정 가능하게
+- **배달권역 확장** 용이하게 설계
+- **배달대행 연동** 추후 가능하게 구조 설계
+
+---
+
+## 💰 비용 절감 효과
+
+### 현재 배달앱 수수료
+- **배달의민족**: 주문금액의 6.8% + α
+- **쿠팡이츠**: 주문금액의 9.8% + α  
+- **요기요**: 주문금액의 5.9% + α
+
+### 직배송 도입 효과
+- **수수료 절약**: 주문당 1,000-3,000원
+- **고객 데이터 확보**: 직접적인 고객 관계 구축
+- **마케팅 자율성**: 플랫폼 정책에 의존하지 않음
+
+---
+
+## 🎯 예상 결과
+
+### 단기 목표 (1-3개월)
+- **직배송 주문 비율**: 전체 주문의 10-20%
+- **수수료 절약**: 월 50-100만원
+- **고객 데이터베이스**: 500-1000명 구축
+
+### 장기 목표 (6-12개월)  
+- **직배송 주문 비율**: 전체 주문의 40-60%
+- **수수료 절약**: 월 200-500만원
+- **고객 충성도**: 재주문율 30% 이상
+
+---
+
+## 📞 구현 후 고객 안내 문구
+
+### 전단지/자석스티커 문구
+```
+🍦 요거트퍼플 직주문으로 더 저렴하게!
+
+❌ 배달앱 수수료 NO!
+✅ 동일한 맛, 더 나은 서비스
+✅ 반경 1.5km 무료배송
+✅ 최소주문 15,000원
+
+📱 QR코드 스캔하고 주문하세요!
+```
+
+---
+
+이 기획서를 바탕으로 체계적으로 구현하시면 됩니다! 
+며칠 후에 이 문서와 함께 다시 만나서 멋진 기능을 완성해봐요! 🚀✨
