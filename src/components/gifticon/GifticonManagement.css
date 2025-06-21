@@ -1,0 +1,139 @@
+/* src/components/gifticon/GifticonManagement.css */
+
+.gifticon-management {
+  padding: 24px;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* 헤더 */
+.gifticon-header {
+  background: white;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.gifticon-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+}
+
+.gifticon-header p {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+  opacity: 0.8;
+}
+
+/* 탭 네비게이션 */
+.gifticon-tabs {
+  display: flex;
+  background: white;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  gap: 8px;
+}
+
+.tab-button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 16px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}
+
+.tab-button:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.tab-icon {
+  font-size: 18px;
+}
+
+.tab-text {
+  font-weight: 600;
+}
+
+/* 콘텐츠 영역 */
+.gifticon-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 500px;
+  overflow: hidden;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .gifticon-management {
+    padding: 16px;
+  }
+
+  .gifticon-header {
+    padding: 24px 20px;
+  }
+
+  .gifticon-header h1 {
+    font-size: 24px;
+  }
+
+  .gifticon-header p {
+    font-size: 14px;
+  }
+
+  .gifticon-tabs {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .tab-button {
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+
+  .tab-icon {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gifticon-management {
+    padding: 12px;
+  }
+
+  .gifticon-header {
+    padding: 20px 16px;
+  }
+
+  .gifticon-header h1 {
+    font-size: 20px;
+  }
+
+  .tab-button {
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+}

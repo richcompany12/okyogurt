@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import OrderManagement from './OrderManagement';
 import StoreManagement from './StoreManagement';
 import MenuManagement from './StoreManagement/MenuManagement';
+import GifticonManagement from './gifticon/GifticonManagement';
 import PointsManagement from '../pages/PointsManagement';
 import BusinessHoursManagement from './BusinessHoursManagement';
 import StatsDashboard from './StatsDashboard';
@@ -76,6 +77,7 @@ function AdminDashboard() {
     { id: 'business', name: '영업시간 관리', icon: '🕐', adminOnly: true },
     { id: 'stores', name: '상점 관리', icon: '🏪', adminOnly: true },
     { id: 'menu', name: '메뉴 관리', icon: '🍦', adminOnly: true },
+    { id: 'gifticon', name: '기프티콘 관리', icon: '🎁', adminOnly: true },
     { id: 'points', name: '포인트 내역', icon: '💎', adminOnly: false },
     { id: 'accounts', name: '계정 관리', icon: '👤', adminOnly: true },
     { id: 'stats', name: '통계 분석', icon: '📊', adminOnly: true },
@@ -91,6 +93,8 @@ function AdminDashboard() {
         return <StoreManagement />;
       case 'menu':
         return <MenuManagement />;
+      case 'gifticon':
+        return <GifticonManagement />;
       case 'points':
         return <PointsManagement />;
       case 'accounts':
