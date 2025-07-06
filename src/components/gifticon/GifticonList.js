@@ -387,7 +387,7 @@ function GifticonList({ onBack }) {
                     
                     <div style={{ color: '#666', lineHeight: '1.6' }}>
                       <div><strong>💰 원금액:</strong> {GifticonUtils.formatAmount(gifticon.amount)}</div>
-                      <div><strong>💎 잔액:</strong> {GifticonUtils.formatAmount(gifticon.remainingAmount || gifticon.amount)}</div>
+                      <div><strong>💎 잔액:</strong> {GifticonUtils.formatAmount(gifticon.remainingAmount ?? gifticon.amount)}</div>
                       {gifticon.totalRecharged > 0 && (
                         <div><strong>🔄 총 충전액:</strong> {GifticonUtils.formatAmount(gifticon.totalRecharged)} ({gifticon.rechargeCount}회)</div>
                       )}

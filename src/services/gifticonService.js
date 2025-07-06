@@ -355,7 +355,7 @@ export class GifticonService {
 
       // 새로운 금액 계산
       const newAmount = gifticon.amount + rechargeData.rechargeAmount;
-      const newRemainingAmount = (gifticon.remainingAmount || gifticon.amount) + rechargeData.rechargeAmount;
+      const newRemainingAmount = (gifticon.remainingAmount ?? gifticon.amount) + rechargeData.rechargeAmount;
       const newTotalRecharged = (gifticon.totalRecharged || 0) + rechargeData.rechargeAmount;
       const newRechargeCount = (gifticon.rechargeCount || 0) + 1;
 

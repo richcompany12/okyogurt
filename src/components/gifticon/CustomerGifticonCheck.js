@@ -1,8 +1,8 @@
 // src/components/CustomerGifticonCheck.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { GifticonService } from '../services/gifticonService';
-import { GifticonUtils } from '../utils/gifticonUtils';
+import { GifticonService } from '../../services/gifticonService';
+import { GifticonUtils } from '../../utils/gifticonUtils';
 
 function CustomerGifticonCheck() {
   const { gifticonId } = useParams();
@@ -311,7 +311,7 @@ function CustomerGifticonCheck() {
                 fontWeight: 'bold', 
                 color: '#2196f3'
               }}>
-                {GifticonUtils.formatAmount(gifticon.remainingAmount || gifticon.amount)}
+                {GifticonUtils.formatAmount(gifticon.remainingAmount ?? gifticon.amount)}
               </div>
             </div>
           </div>

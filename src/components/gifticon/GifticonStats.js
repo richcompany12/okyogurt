@@ -69,7 +69,7 @@ function GifticonStats({ onBack }) {
         // 금액 계산
         totalStats.totalAmount += gifticon.amount || 0;
         totalStats.usedAmount += gifticon.totalUsed || 0;
-        totalStats.remainingAmount += gifticon.remainingAmount || gifticon.amount || 0;
+        totalStats.remainingAmount += gifticon.remainingAmount ?? gifticon.amount ?? 0;
 
         // 오늘 생성된 기프티콘
         if (gifticon.createdAt && gifticon.createdAt.toDate() >= todayStart) {

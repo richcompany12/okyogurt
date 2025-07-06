@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import GifticonCreate from './GifticonCreate';
 import GifticonList from './GifticonList';
-import GifticonScan from './GifticonScan';
+import AdminQRScanner from './AdminQRScanner';
 import './GifticonManagement.css';
 
 function GifticonManagement() {
@@ -21,7 +21,7 @@ function GifticonManagement() {
       case 'list':
         return <GifticonList />;
       case 'scan':
-        return <GifticonScan />;
+         return <AdminQRScanner />;
       default:
         return <GifticonList />;
     }

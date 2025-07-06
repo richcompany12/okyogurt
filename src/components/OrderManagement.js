@@ -6,7 +6,8 @@ import {
   orderBy, 
   onSnapshot, 
   doc, 
-  updateDoc
+  updateDoc,
+  getDoc
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import './OrderManagement.css';
@@ -249,196 +250,267 @@ if (!cancelResponse.ok) {
     }
   };
 
-  // 프린트 함수 추가
-const handlePrintOrder = (order) => {
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>주문서 - ${order.orderNumber}</title>
-        <style>
-          @page {
-            size: 80mm auto;
-            margin: 0;
-            orientation: portrait;
-          }
-          
-          @media print {
+// 프린트 함수 추가
+const handlePrintOrder = async (order) => {
+  try {
+    // 🆕 상점 정보 조회 (기존과 동일)
+    let storeAddress = '주소 정보 없음';
+    try {
+      if (order.storeId) {
+        const storeDoc = await getDoc(doc(db, 'stores', order.storeId));
+        if (storeDoc.exists()) {
+          storeAddress = storeDoc.data().address || '주소 정보 없음';
+        }
+      }
+    } catch (error) {
+      console.error('상점 정보 조회 오류:', error);
+    }
+
+    // 🆕 프린트 서버 API 호출
+    console.log('🖨️ 시리얼 프린터 출력 시작...');
+    
+    // 주문 데이터에 상점 주소 추가
+    const orderDataWithAddress = {
+      ...order,
+      storeAddress: storeAddress,
+      // formatTime 함수 결과도 미리 계산
+      formattedCreatedAt: formatTime(order.createdAt)
+    };
+
+    const response = await fetch('http://localhost:3001/print', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ orderData: orderDataWithAddress })
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('✅ 시리얼 프린터 출력 성공:', result.message);
+      
+      // 성공 시 사용자에게 알림 (선택사항)
+      // alert('프린터 출력이 완료되었습니다.');
+    } else {
+      throw new Error(`프린터 서버 오류: ${response.status}`);
+    }
+
+  } catch (error) {
+    console.error('❌ 프린터 출력 오류:', error);
+    
+    // 프린터 실패 시 기존 브라우저 프린트로 fallback
+    console.log('🔄 브라우저 프린트로 대체 실행...');
+    
+    // 🆕 상점 정보 조회 (fallback용)
+    let storeAddress = '주소 정보 없음';
+    try {
+      if (order.storeId) {
+        const storeDoc = await getDoc(doc(db, 'stores', order.storeId));
+        if (storeDoc.exists()) {
+          storeAddress = storeDoc.data().address || '주소 정보 없음';
+        }
+      }
+    } catch (error) {
+      console.error('상점 정보 조회 오류:', error);
+    }
+
+    // 기존 브라우저 프린트 방식 (fallback)
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>주문서 - ${order.orderNumber}</title>
+          <style>
             @page {
-              size: portrait;
+              size: 80mm auto;
               margin: 0;
+              orientation: portrait;
             }
             
-            body {
-              transform: rotate(0deg);
-              transform-origin: top left;
+            @media print {
+              @page {
+                size: portrait;
+                margin: 0;
+              }
+              
+              body {
+                transform: rotate(0deg);
+                transform-origin: top left;
+              }
             }
-          }
-          
-          body { 
-            font-family: 'Courier New', monospace;
-            font-size: 22px;
-            font-weight: 900;
-            line-height: 1.3;
-            margin: 0;
-            padding: 5mm;
-            width: 70mm;
-            color: #000000;
-            background: white;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-          
-          .center { text-align: center; }
-          .left { text-align: left; }
-          .right { text-align: right; }
-          .bold { font-weight: bold; }
-          
-          .header {
-            text-align: center;
-            border-bottom: 1px dashed #333;
-            padding-bottom: 5px;
-            margin-bottom: 8px;
-          }
-          
-          .store-name {
-            font-size: 28px;
-            font-weight: 900;
-            margin-bottom: 3px;
-            color: #000000;
-          }
-          
-          .section {
-            margin: 8px 0;
-            border-bottom: 1px dashed #ccc;
-            padding-bottom: 5px;
-          }
-          
-          .section:last-child {
-            border-bottom: none;
-          }
-          
-          .row {
-            display: flex;
-            justify-content: space-between;
-            margin: 2px 0;
-            font-size: 20px;
-            font-weight: 700;
-          }
-          
-          .menu-item {
-            margin: 1px 0;
-            font-size: 20px;
-            font-weight: 700;
-          }
-          
-          .total-row {
-            font-weight: 900;
-            font-size: 24px;
-            border-top: 2px solid #000;
-            padding-top: 3px;
-            margin-top: 5px;
-            color: #000000;
-          }
-          
-          .customer-info {
-            font-size: 20px;
-            font-weight: 700;
-            margin: 2px 0;
-            color: #000000;
-          }
-          
-          .special-requests {
-            font-size: 10px;
-            border: 1px solid #ccc;
-            padding: 3px;
-            margin: 5px 0;
-            word-wrap: break-word;
-          }
-          
-          .footer {
-            text-align: center;
-            font-size: 10px;
-            margin-top: 10px;
-            color: #666;
-          }
-        </style>
-      </head>
-      <body>
-        <!-- 헤더 (상점명) -->
-        <div class="header">
-          <div class="store-name">🍦 ${order.storeName || '요거트퍼플'}</div>
-          <div>주문번호: ${order.orderNumber || order.id.slice(-6)}</div>
-        </div>
+            
+            body { 
+              font-family: 'Courier New', monospace;
+              font-size: 22px;
+              font-weight: 900;
+              line-height: 1.3;
+              margin: 0;
+              padding: 5mm;
+              width: 70mm;
+              color: #000000;
+              background: white;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            
+            .center { text-align: center; }
+            .left { text-align: left; }
+            .right { text-align: right; }
+            .bold { font-weight: bold; }
+            
+            .header {
+              text-align: center;
+              border-bottom: 1px dashed #333;
+              padding-bottom: 5px;
+              margin-bottom: 8px;
+            }
+            
+            .store-name {
+              font-size: 28px;
+              font-weight: 900;
+              margin-bottom: 3px;
+              color: #000000;
+            }
+            
+            .section {
+              margin: 8px 0;
+              border-bottom: 1px dashed #ccc;
+              padding-bottom: 5px;
+            }
+            
+            .section:last-child {
+              border-bottom: none;
+            }
+            
+            .row {
+              display: flex;
+              justify-content: space-between;
+              margin: 2px 0;
+              font-size: 20px;
+              font-weight: 700;
+            }
+            
+            .menu-item {
+              margin: 1px 0;
+              font-size: 20px;
+              font-weight: 700;
+            }
+            
+            .total-row {
+              font-weight: 900;
+              font-size: 24px;
+              border-top: 2px solid #000;
+              padding-top: 3px;
+              margin-top: 5px;
+              color: #000000;
+            }
+            
+            .customer-info {
+              font-size: 20px;
+              font-weight: 700;
+              margin: 2px 0;
+              color: #000000;
+            }
+            
+            .special-requests {
+              font-size: 10px;
+              border: 1px solid #ccc;
+              padding: 3px;
+              margin: 5px 0;
+              word-wrap: break-word;
+            }
+            
+            .footer {
+              text-align: center;
+              font-size: 10px;
+              margin-top: 10px;
+              color: #666;
+            }
+          </style>
+        </head>
+        <body>
+          <!-- 헤더 (상점명) -->
+          <div class="header">
+            <div class="store-name">🍦 ${order.storeName || '요거트퍼플'}</div>
+            <div>주문번호: ${order.orderNumber || order.id.slice(-6)}</div>
+          </div>
 
-        <!-- 고객 정보 -->
-        <div class="section">
-          <div class="bold center">📞 고객 정보</div>
-          <div class="customer-info">전화: ${order.phone}</div>
-          ${order.tableNumber ? `<div class="customer-info">테이블: ${order.tableNumber}</div>` : ''}
-        </div>
+          <!-- 고객 정보 -->
+          <div class="section">
+            <div class="bold center">📞 고객 정보</div>
+            <div class="customer-info">전화: ${order.phone}</div>
+            ${order.tableNumber ? `<div class="customer-info">테이블: ${order.tableNumber}</div>` : ''}
+          </div>
 
-        <!-- 주문 메뉴 (필수) -->
-        <div class="section">
-          <div class="bold center">📋 주문 메뉴</div>
-          ${order.items && order.items.length > 0 ? 
-            order.items.map(item => 
-              `<div class="menu-item">
-                <div class="row">
-                  <span>${item.name}</span>
-                  <span>x${item.quantity}</span>
-                </div>
-                <div class="row">
-                  <span>단가: ${item.price?.toLocaleString()}원</span>
-                  <span>${(item.price * item.quantity)?.toLocaleString()}원</span>
-                </div>
-              </div>`
-            ).join('') 
-            : '<div class="menu-item">메뉴 정보 없음</div>'
-          }
-          
-          <!-- 총액 -->
-          <div class="total-row">
-            <div class="row">
-              <span>총 금액</span>
-              <span>${order.amount?.toLocaleString() || '0'}원</span>
+          <!-- 🆕 배달 위치 -->
+          <div class="section">
+            <div class="bold center">🚚 배달 위치</div>
+            <div class="customer-info">상점명: ${order.storeName || '정보없음'}</div>
+            <div class="customer-info">주소: ${storeAddress}</div>
+          </div>
+
+          <!-- 주문 메뉴 (필수) -->
+          <div class="section">
+            <div class="bold center">📋 주문 메뉴</div>
+            ${order.items && order.items.length > 0 ? 
+              order.items.map(item => 
+                `<div class="menu-item">
+                  <div class="row">
+                    <span>${item.name}</span>
+                    <span>x${item.quantity}</span>
+                  </div>
+                  <div class="row">
+                    <span>단가: ${item.price?.toLocaleString()}원</span>
+                    <span>${(item.price * item.quantity)?.toLocaleString()}원</span>
+                  </div>
+                </div>`
+              ).join('') 
+              : '<div class="menu-item">메뉴 정보 없음</div>'
+            }
+            
+            <!-- 총액 -->
+            <div class="total-row">
+              <div class="row">
+                <span>총 금액</span>
+                <span>${order.amount?.toLocaleString() || '0'}원</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 주문 시각 -->
-        <div class="section">
-          <div class="bold center">⏰ 주문 정보</div>
-          <div class="customer-info">주문시간: ${formatTime(order.createdAt)}</div>
-          ${order.deliveryTime ? `<div class="customer-info">배달예정: ${order.deliveryTime}분 후</div>` : ''}
-          ${order.status === 'paid' ? '<div class="customer-info">💳 결제완료</div>' : ''}
-        </div>
+          <!-- 주문 시각 -->
+          <div class="section">
+            <div class="bold center">⏰ 주문 정보</div>
+            <div class="customer-info">주문시간: ${formatTime(order.createdAt)}</div>
+            ${order.deliveryTime ? `<div class="customer-info">배달예정: ${order.deliveryTime}분 후</div>` : ''}
+            ${order.status === 'paid' ? '<div class="customer-info">💳 결제완료</div>' : ''}
+          </div>
 
-        <!-- 요청사항 (있을 경우만) -->
-        ${order.specialRequests ? `
-        <div class="section">
-          <div class="bold center">📝 요청사항</div>
-          <div class="special-requests">${order.specialRequests}</div>
-        </div>
-        ` : ''}
+          <!-- 요청사항 (있을 경우만) -->
+          ${order.specialRequests ? `
+          <div class="section">
+            <div class="bold center">📝 요청사항</div>
+            <div class="special-requests">${order.specialRequests}</div>
+          </div>
+          ` : ''}
 
-        <!-- 푸터 -->
-        <div class="footer">
-          <div>━━━━━━━━━━━━━━━━━━━━</div>
-          <div>맛있게 드세요! 🍦</div>
-          <div>${new Date().toLocaleString('ko-KR')}</div>
-        </div>
-      </body>
-    </html>
-  `);
-  
-  printWindow.document.close();
-  
-  // 프린트 실행
-  printWindow.onload = function() {
-    printWindow.print();
-    printWindow.close();
-  };
+          <!-- 푸터 -->
+          <div class="footer">
+            <div>━━━━━━━━━━━━━━━━━━━━</div>
+            <div>맛있게 드세요! 🍦</div>
+            <div>${new Date().toLocaleString('ko-KR')}</div>
+          </div>
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    
+    // 프린트 실행
+    printWindow.onload = function() {
+      printWindow.print();
+      printWindow.close();
+    };
+  }
 };
 
 
@@ -508,7 +580,7 @@ const formatTime = (timestamp) => {
                   <span className="order-id">#{order.orderNumber || order.id.slice(-6)}</span>
                   {getStatusBadge(order.status)}
                   <button 
-                    onClick={() => handlePrintOrder(order)}
+                    onClick={async () => await handlePrintOrder(order)}
                     className="btn-print"
                     title="프린트"
                   >
@@ -595,7 +667,7 @@ const formatTime = (timestamp) => {
                   <span className="order-id">#{order.orderNumber || order.id.slice(-6)}</span>
                   {getStatusBadge(order.status)}
                   <button 
-                    onClick={() => handlePrintOrder(order)}
+                    onClick={async () => await handlePrintOrder(order)}
                     className="btn-print"
                     title="프린트"
                   >
@@ -681,7 +753,7 @@ const formatTime = (timestamp) => {
               <span>{formatTime(order.createdAt)}</span>
               <span>
                 <button 
-                  onClick={() => handlePrintOrder(order)}
+                  onClick={async () => await handlePrintOrder(order)}
                   className="btn-print-small"
                   title="프린트"
                 >

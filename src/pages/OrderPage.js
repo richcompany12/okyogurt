@@ -106,7 +106,7 @@ const OrderPage = () => {
   const businessStatus = useBusinessHours();
   const [tapCount, setTapCount] = useState(0);
   const [tapTimer, setTapTimer] = useState(null);
-
+  
   // 🔧 페이지 로드 시 로깅
   useEffect(() => {
     debugLogger.log('PAGE_LOAD', '주문 페이지 로드됨', { storeId: storeId });
@@ -275,6 +275,16 @@ const handleStoreNameTap = () => {
   setTapTimer(timer);
 };
 
+const handleSmartBack = () => {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    if (window.confirm('앱을 종료하시겠습니까?')) {
+      window.close();
+    }
+  }
+};
+
   // 이미지 URL 처리 함수
   const getImageUrl = (menu) => {
     return menu.image || menu.imageUrl || null;
@@ -423,9 +433,11 @@ const addPointsToStore = async (orderData) => {
         sendOrderNotificationSMS(orderData)
           .then(() => {
             debugLogger.log('SMS_SEND_SUCCESS', 'SMS 발송 성공');
+            console.log('✅ 관리자 알림 SMS 발송 완료'); // 🆕 추가
           })
           .catch(err => {
             debugLogger.error('SMS_SEND_ERROR', err, { orderData: orderData });
+            console.error('❌ 관리자 SMS 발송 실패:', err); // 🆕 추가
           });
         
         // 🆕 포인트 적립
@@ -556,12 +568,12 @@ if (!businessStatus.isOpen) {
 
   const menusByCategory = getMenusByCategory();
 
-  return (
+return (
     <div className="order-page">
       {/* 헤더 */}
       <header className="header">
         <div className="header-gradient">
-          <button className="back-button" onClick={() => navigate('/')}>
+          <button className="back-button" onClick={handleSmartBack}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -569,12 +581,12 @@ if (!businessStatus.isOpen) {
           
           <div className="store-info">
             <h1 
-  className="store-name" 
-  onClick={handleStoreNameTap}
-  style={{ cursor: 'pointer', userSelect: 'none' }}
->
-  {store.name}
-</h1>
+              className="store-name" 
+              onClick={handleStoreNameTap}
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+            >
+              {store.name}
+            </h1>
             <p className="delivery-info">최소주문 11,000원 이상 무료배달</p>
           </div>
 
@@ -789,12 +801,12 @@ if (!businessStatus.isOpen) {
         <div className="modal-overlay" onClick={() => setShowOrderForm(false)}>
           <div className="order-form-modal" onClick={e => e.stopPropagation()}>
             <OrderForm
-  cart={cart}
-  totalPrice={getTotalAmount()}
-  storeId={storeId}
-  onSubmit={handleOrderSubmit}
-  onBack={() => setShowOrderForm(false)}
-/>
+              cart={cart}
+              totalPrice={getTotalAmount()}
+              storeId={storeId}
+              onSubmit={handleOrderSubmit}
+              onBack={() => setShowOrderForm(false)}
+            />
           </div>
         </div>
       )}
@@ -815,6 +827,7 @@ if (!businessStatus.isOpen) {
           <span className="floating-total">{getTotalAmount().toLocaleString()}원</span>
         </button>
       )}
+      
       <SimpleFooter />
     </div>
   );

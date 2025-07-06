@@ -1,0 +1,657 @@
+/* src/components/SplashScreen/SplashScreen.css */
+
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  transition: transform 0.3s ease;
+}
+
+/* 🆕 진동 효과 */
+.splash-screen.shake {
+  animation: screenShake 0.3s ease-in-out;
+}
+
+@keyframes screenShake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-2px, 1px) rotate(-0.5deg); }
+  20% { transform: translate(2px, -1px) rotate(0.5deg); }
+  30% { transform: translate(-1px, 2px) rotate(-0.3deg); }
+  40% { transform: translate(1px, -2px) rotate(0.3deg); }
+  50% { transform: translate(-2px, -1px) rotate(-0.4deg); }
+  60% { transform: translate(2px, 1px) rotate(0.4deg); }
+  70% { transform: translate(-1px, -2px) rotate(-0.2deg); }
+  80% { transform: translate(1px, 2px) rotate(0.2deg); }
+  90% { transform: translate(-1px, 1px) rotate(-0.1deg); }
+}
+
+/* 🆕 은은한 배경 로고 */
+.background-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 200px;
+  color: rgba(255, 255, 255, 0.05);
+  font-weight: 900;
+  z-index: 2;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* 파티클 배경 효과 */
+.particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+}
+
+.particle:nth-child(1) { width: 8px; height: 8px; top: 20%; left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { width: 12px; height: 12px; top: 40%; left: 80%; animation-delay: 1s; }
+.particle:nth-child(3) { width: 6px; height: 6px; top: 60%; left: 30%; animation-delay: 2s; }
+.particle:nth-child(4) { width: 10px; height: 10px; top: 80%; left: 70%; animation-delay: 0.5s; }
+.particle:nth-child(5) { width: 14px; height: 14px; top: 30%; left: 60%; animation-delay: 1.5s; }
+.particle:nth-child(6) { width: 8px; height: 8px; top: 70%; left: 20%; animation-delay: 2.5s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+  50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+}
+
+/* 글로우 효과 */
+.glow-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 107, 157, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: glow 3s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes glow {
+  0%, 100% { 
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.3; 
+  }
+  50% { 
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.6; 
+  }
+}
+
+/* 중앙 콘텐츠 */
+.splash-content {
+  z-index: 10;
+  text-align: center;
+  color: white;
+  position: relative;
+}
+
+/* 로고 컨테이너 */
+.logo-container {
+  margin-bottom: 40px;
+  animation: logoEntrance 1s ease-out;
+}
+
+.logo-icon {
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: visible;
+}
+
+@keyframes logoEntrance {
+  0% { 
+    transform: scale(0) rotate(-180deg); 
+    opacity: 0; 
+  }
+  50% { 
+    transform: scale(1.2) rotate(0deg); 
+    opacity: 0.8; 
+  }
+  100% { 
+    transform: scale(1) rotate(0deg); 
+    opacity: 1; 
+  }
+}
+
+/* 홍길동 스타일 배달의 신 로고 */
+.custom-logo {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+/* 스쿠터 이모지 - 홍길동 스타일 이동 */
+.delivery-scooter {
+  position: absolute;
+  font-size: 28px;
+  z-index: 20;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+  animation: hongGilDongMove 3s ease-in-out forwards;
+}
+
+/* 스쿠터 잔상 효과들 */
+.scooter-trail {
+  position: absolute;
+  font-size: 20px;
+  opacity: 0;
+  z-index: 15;
+}
+
+.trail-1 { animation: trail1 3s ease-in-out forwards; }
+.trail-2 { animation: trail2 3s ease-in-out forwards; }
+.trail-3 { animation: trail3 3s ease-in-out forwards; }
+
+/* 속도선들 - 각 단계별로 나타남 */
+.speed-effect {
+  position: absolute;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #ffd700, transparent);
+  border-radius: 2px;
+  opacity: 0;
+  z-index: 10;
+}
+
+.speed-1 {
+  width: 50px;
+  top: 30px;
+  left: -25px;
+  animation: speedEffect1 0.4s ease-out 0.4s;
+}
+
+.speed-2 {
+  width: 60px;
+  top: 50px;
+  right: -30px;
+  transform: rotate(-30deg);
+  animation: speedEffect2 0.4s ease-out 0.9s;
+}
+
+.speed-3 {
+  width: 70px;
+  top: 70px;
+  left: -35px;
+  animation: speedEffect3 0.4s ease-out 1.4s;
+}
+
+/* 최종 로고 (스쿠터가 변신!) */
+.final-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80px;
+  height: 80px;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  animation: finalAppear 0.8s ease-out 1.5s forwards;
+}
+
+/* 최종 로고 내부 - 멋진 배달 심볼 */
+.logo-symbol {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 0 30px rgba(102, 126, 234, 0.6);
+  animation: logoPulse 2s ease-in-out infinite 2.3s;
+}
+
+.logo-symbol::before {
+  content: '🚀';
+  font-size: 40px;
+  animation: rocketSpin 2s ease-in-out infinite 2.3s;
+}
+
+/* 번개 효과 */
+.lightning {
+  position: absolute;
+  width: 6px;
+  height: 25px;
+  background: linear-gradient(180deg, #ffd700, transparent);
+  border-radius: 3px;
+  opacity: 0;
+  z-index: 25;
+}
+
+.lightning-1 {
+  top: 5px;
+  left: 35px;
+  transform: rotate(15deg);
+  animation: lightning 0.3s ease-out 0.5s;
+}
+
+.lightning-2 {
+  top: 35px;
+  right: 15px;
+  transform: rotate(-20deg);
+  animation: lightning 0.3s ease-out 1.0s;
+}
+
+.lightning-3 {
+  bottom: 10px;
+  left: 45px;
+  transform: rotate(10deg);
+  animation: lightning 0.3s ease-out 1.45s;
+}
+
+/* 홍길동 스타일 이동 애니메이션 - 강화된 버전! */
+@keyframes hongGilDongMove {
+  /* 시작: 저 멀리 작은 스쿠터 */
+  0% {
+    top: -80px;
+    left: -150px;
+    transform: scale(0.2) rotate(-25deg);
+    opacity: 0.3;
+  }
+  /* 첫 번째 휙! → 오른쪽으로 빠르게 */
+  5% {
+    top: -50px;
+    left: -100px;
+    transform: scale(0.4) rotate(-10deg);
+    opacity: 0.8;
+  }
+  25% {
+    top: -20px;
+    left: 200px;
+    transform: scale(0.5) rotate(25deg);
+    opacity: 0.2;
+  }
+  /* 두 번째 휙! / 대각선으로 빠르게 */
+  30% {
+    top: 20px;
+    left: 180px;
+    transform: scale(0.6) rotate(-60deg);
+    opacity: 0.9;
+  }
+  50% {
+    top: 100px;
+    left: -80px;
+    transform: scale(0.7) rotate(-40deg);
+    opacity: 0.2;
+  }
+  /* 세 번째 휙! ㅡ 가로로 빠르게 */
+  55% {
+    top: 70px;
+    left: -50px;
+    transform: scale(0.8) rotate(5deg);
+    opacity: 0.9;
+  }
+  75% {
+    top: 60px;
+    left: 180px;
+    transform: scale(0.9) rotate(15deg);
+    opacity: 0.2;
+  }
+  /* 최종 등장 준비 - 더 역동적으로! */
+  80% {
+    top: 50px;
+    left: 50px;
+    transform: scale(1.2) rotate(-30deg);
+    opacity: 0.6;
+  }
+  90% {
+    top: 45px;
+    left: 55px;
+    transform: scale(1.8) rotate(180deg);
+    opacity: 0.9;
+  }
+  /* 최종: 폭발적 변신 후 사라짐 */
+  100% {
+    top: 50px;
+    left: 60px;
+    transform: scale(2.5) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* 잔상 효과들 - 더 생생하게! */
+@keyframes trail1 {
+  20% { 
+    top: -30px; 
+    left: 150px; 
+    opacity: 0.7; 
+    transform: scale(0.4) rotate(20deg); 
+  }
+  30% { opacity: 0; transform: scale(0.1); }
+}
+
+@keyframes trail2 {
+  45% { 
+    top: 80px; 
+    left: -50px; 
+    opacity: 0.7; 
+    transform: scale(0.5) rotate(-50deg); 
+  }
+  55% { opacity: 0; transform: scale(0.1); }
+}
+
+@keyframes trail3 {
+  70% { 
+    top: 65px; 
+    left: 150px; 
+    opacity: 0.7; 
+    transform: scale(0.6) rotate(10deg); 
+  }
+  80% { opacity: 0; transform: scale(0.1); }
+}
+
+/* 속도 효과들 - 더 강렬하게! */
+@keyframes speedEffect1 {
+  0% { opacity: 0; transform: translateX(-30px) scaleX(0.5); }
+  50% { opacity: 1; transform: translateX(0) scaleX(1.2); }
+  100% { opacity: 0; transform: translateX(30px) scaleX(0.3); }
+}
+
+@keyframes speedEffect2 {
+  0% { opacity: 0; transform: translateX(30px) rotate(-30deg) scaleX(0.5); }
+  50% { opacity: 1; transform: translateX(0) rotate(-30deg) scaleX(1.2); }
+  100% { opacity: 0; transform: translateX(-30px) rotate(-30deg) scaleX(0.3); }
+}
+
+@keyframes speedEffect3 {
+  0% { opacity: 0; transform: translateX(-40px) scaleX(0.5); }
+  50% { opacity: 1; transform: translateX(0) scaleX(1.3); }
+  100% { opacity: 0; transform: translateX(40px) scaleX(0.3); }
+}
+
+/* 번개 효과 - 더 강렬하게! */
+@keyframes lightning {
+  0% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+  30% { opacity: 1; transform: scale(1.5) rotate(5deg); }
+  100% { opacity: 0; transform: scale(0.8) rotate(-5deg); }
+}
+
+/* 최종 로고 등장 - 더 임팩트 있게! */
+@keyframes finalAppear {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(-360deg);
+    opacity: 0;
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(1.5) rotate(0deg);
+    opacity: 0.6;
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(0.8) rotate(20deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* 최종 로고 펄스 */
+@keyframes logoPulse {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(102, 126, 234, 0.6);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 60px rgba(255, 107, 157, 1);
+    transform: scale(1.1);
+  }
+}
+
+/* 로켓 회전 */
+@keyframes rocketSpin {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.2); }
+  50% { transform: rotate(180deg) scale(1); }
+  75% { transform: rotate(270deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* 텍스트 애니메이션 */
+.text-line {
+  opacity: 0;
+  transform: translateX(-100px);
+  margin: 8px 0;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.text-line.line1 {
+  font-size: 32px;
+  font-weight: 800;
+  animation: slideInLeft 0.8s ease-out 1.8s forwards;
+  background: linear-gradient(45deg, #ffffff, #ff6b9d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-line.line2 {
+  font-size: 24px;
+  font-weight: 600;
+  animation: slideInRight 0.8s ease-out 2.1s forwards;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.text-line.line3 {
+  font-size: 20px;
+  font-weight: 500;
+  animation: slideInUp 0.8s ease-out 2.4s forwards;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 경장하지? - 특별 효과 강화! + 🆕 사운드 타이밍 맞춤 */
+.text-line.line4 {
+  font-size: 30px;
+  font-weight: 900;
+  margin-top: 25px;
+  animation: kyeongJangEffect 1.5s ease-out 2.5s forwards;
+  background: linear-gradient(45deg, #ffd700, #ff6b9d, #667eea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 40px rgba(255, 215, 0, 1);
+  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes slideInLeft {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 경장하지? 특별 효과 - 더 강렬하게! */
+@keyframes kyeongJangEffect {
+  0% {
+    opacity: 0;
+    transform: translateY(80px) scale(0.3) rotate(-20deg);
+  }
+  20% {
+    opacity: 0.7;
+    transform: translateY(-20px) scale(1.5) rotate(10deg);
+  }
+  40% {
+    transform: translateY(10px) scale(0.8) rotate(-5deg);
+  }
+  60% {
+    transform: translateY(-5px) scale(1.2) rotate(3deg);
+  }
+  80% {
+    transform: translateY(2px) scale(0.9) rotate(-1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+/* 로딩 인디케이터 */
+.loading-indicator {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: fadeIn 1s ease-out 1.2s forwards;
+  opacity: 0;
+}
+
+.loading-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  animation: bounce 1.4s ease-in-out infinite;
+}
+
+.dot:nth-child(1) { animation-delay: 0s; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1.2); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+/* 전체 페이드아웃 애니메이션 */
+.splash-screen.fade-out {
+  animation: fadeOut 0.5s ease-out forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .custom-logo {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .logo-icon {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .text-line.line1 {
+    font-size: 26px;
+  }
+  
+  .text-line.line2 {
+    font-size: 20px;
+  }
+  
+  .text-line.line3 {
+    font-size: 16px;
+  }
+  
+  .text-line.line4 {
+    font-size: 24px;
+  }
+
+  .background-logo {
+    font-size: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .custom-logo {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .logo-icon {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .text-line.line1 {
+    font-size: 22px;
+  }
+  
+  .text-line.line2 {
+    font-size: 18px;
+  }
+  
+  .text-line.line3 {
+    font-size: 14px;
+  }
+  
+  .text-line.line4 {
+    font-size: 20px;
+  }
+
+  .background-logo {
+    font-size: 120px;
+  }
+}

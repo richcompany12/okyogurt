@@ -100,7 +100,7 @@ function UsageModal({
         }}>
           <div><strong>기프티콘:</strong> {gifticon.id}</div>
           <div><strong>구매자:</strong> {gifticon.purchaserName}</div>
-          <div><strong>현재 잔액:</strong> {GifticonUtils.formatAmount(gifticon.remainingAmount || gifticon.amount)}</div>
+          <div><strong>현재 잔액:</strong> {GifticonUtils.formatAmount(gifticon.remainingAmount ?? gifticon.amount)}</div>
         </div>
 
         {/* 사용 금액 입력 */}
@@ -118,7 +118,7 @@ function UsageModal({
             placeholder="사용할 금액을 입력하세요"
             value={usageForm.usedAmount}
             onChange={(e) => setUsageForm({...usageForm, usedAmount: e.target.value})}
-            max={gifticon.remainingAmount || gifticon.amount}
+            max={gifticon.remainingAmount ?? gifticon.amount}
             style={{
               width: '100%',
               padding: '12px',
@@ -129,7 +129,7 @@ function UsageModal({
             }}
           />
           <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-            최대 사용 가능: {GifticonUtils.formatAmount(gifticon.remainingAmount || gifticon.amount)}
+            최대 사용 가능: {GifticonUtils.formatAmount(gifticon.remainingAmount ?? gifticon.amount)}
           </div>
         </div>
 

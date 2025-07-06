@@ -1,4 +1,4 @@
-# 요거트퍼플 일반고객 직배송 기능 기획서
+# 요거트퍼플 일반고객 직배송 기능 기획서 (수정본)
 
 ## 📋 프로젝트 개요
 
@@ -18,12 +18,12 @@
 ### 1. 배달 타입 구분
 ```
 제휴상점 배달 (기존)
-├── QR코드 → storeId (제휴상점 ID)
+├── OrderPage.js → OrderForm.js (기존 유지)
 ├── 입력: 전화번호, 테이블번호(선택), 요청사항(선택)
 └── 배달지: 제휴상점 테이블
 
 일반고객 직배송 (신규)
-├── QR코드 → storeId (가상상점 ID: "yogurt-purple-direct")
+├── OrderPage.js → storeId 조건 확인 → DirectOrderForm.js (신규)
 ├── 입력: 전화번호, 배달주소(필수), 요청사항(선택)
 └── 배달지: 고객 집 주소
 ```
@@ -31,8 +31,8 @@
 ### 2. 주소 입력 시스템
 - **주소 검색**: 다음(카카오) 주소 API 사용
 - **상세주소**: 동호수, 층수, 출입방법 등
-- **좌표 변환**: 주소 → 위도/경도 변환 (카카오 지도 API)
-- **거리 계산**: 매장 좌표 기준 직선거리 계산 (Haversine 공식)
+- **좌표 변환**: 주소 → 위도/경도 변환
+- **거리 계산**: 매장 좌표 기준 직선거리 계산
 
 ### 3. 배송비 계산 시스템
 ```
@@ -42,44 +42,53 @@
 ├── 반경 1.5km 이내: 무료배송
 ├── 1.5km - 3km: 2,000원
 ├── 3km - 5km: 3,000원
-└── 5km 초과: 배달불가 (추후 확장 가능)
+└── 5km 초과: 배달불가
 ```
 
-### 4. 최소 주문금액 차별화
+### 4. 최소 주문금액
 ```
-제휴상점: 11,000원 (기존 유지)
-일반고객: 15,000원 (배달비용 고려)
+일반고객 직배송: 15,000원 (배달비용 고려)
 ```
 
 ---
 
 ## 🔧 기술 구현 방안
 
-### 파일 구조 변경
+### 파일 구조
 
-#### 수정할 파일 (3개)
+#### 수정한 파일
 1. **OrderPage.js**
-   - `storeId` 기반 배달타입 판별 로직 추가
-   - 조건부 UI 렌더링
+   - `storeId` 기반 DirectOrderForm 조건부 렌더링
+   - 기존 OrderForm과 분리된 구조
 
-2. **OrderForm.js**
-   - 조건부 입력 필드 (테이블번호 vs 주소입력)
-   - 배송비 계산 로직 연동
-   - 최소주문금액 검증 로직
+#### 생성한 파일
+1. **DirectOrderForm.js**
+   ```javascript
+   // 직배송 전용 주문 폼
+   - AddressInput 컴포넌트 포함
+   - 배송비 계산 및 표시
+   - 최소주문금액 15,000원 검증
+   - 포트원 결제 연동
+   ```
 
-3. **OrderForm.css**
-   - 주소입력 관련 스타일링 추가
+2. **DirectOrderForm.css**
+   ```css
+   // 직배송 전용 스타일
+   - PC 화면 최적화 (모달 크기 800px)
+   - 반응형 디자인
+   - 주소입력 UI 스타일링
+   ```
 
-#### 생성할 파일 (3개)
-1. **AddressInput.js**
+3. **AddressInput.js**
    ```javascript
    // 주소입력 전용 컴포넌트
    - 다음 주소 API 팝업
    - 상세주소 입력
+   - 거리 및 배송비 자동 계산
    - 주소 유효성 검증
    ```
 
-2. **deliveryUtils.js**
+4. **deliveryUtils.js**
    ```javascript
    // 배송 관련 유틸리티
    - calculateDistance(lat1, lng1, lat2, lng2)
@@ -88,38 +97,42 @@
    - validateDeliveryArea(coordinates)
    ```
 
-3. **constants.js**
+5. **constants.js**
    ```javascript
    // 설정값 관리
    - STORE_COORDINATES: { lat: 37.xxxx, lng: 127.xxxx }
-   - DELIVERY_FEE_RULES: { ... }
-   - MIN_ORDER_AMOUNTS: { ... }
-   - DIRECT_DELIVERY_STORE_ID: "yogurt-purple-direct"
+   - DELIVERY_FEE_RULES
+   - MIN_ORDER_AMOUNTS
+   - ERROR_MESSAGES
    ```
 
 ### 핵심 로직 구현
 
-#### 1. 배달타입 판별
+#### 1. 조건부 폼 렌더링
 ```javascript
 // OrderPage.js
-const isDirectDelivery = storeId === DIRECT_DELIVERY_STORE_ID;
-const minOrderAmount = isDirectDelivery ? 15000 : 11000;
+const isDirectDelivery = storeId === 'yogurt-purple-direct';
+
+return (
+  <div className="order-page">
+    {isDirectDelivery ? (
+      <DirectOrderForm 
+        storeId={storeId}
+        cartItems={cartItems}
+        onClose={onClose}
+      />
+    ) : (
+      <OrderForm 
+        storeId={storeId}
+        cartItems={cartItems}
+        onClose={onClose}
+      />
+    )}
+  </div>
+);
 ```
 
-#### 2. 조건부 UI 렌더링
-```javascript
-// OrderForm.js
-{isDirectDelivery ? (
-  <AddressInput 
-    onAddressChange={handleAddressChange}
-    onDeliveryFeeChange={setDeliveryFee}
-  />
-) : (
-  <TableNumberInput />
-)}
-```
-
-#### 3. 거리 및 배송비 계산
+#### 2. 거리 및 배송비 계산
 ```javascript
 // deliveryUtils.js
 export const calculateDistance = (lat1, lng1, lat2, lng2) => {
@@ -134,20 +147,27 @@ export const getDeliveryFee = (distance) => {
 };
 ```
 
-#### 4. 주문 데이터 구조 확장
+#### 3. 주문 데이터 구조
 ```javascript
-// 기존 주문 데이터 + 추가 필드
+// DirectOrderForm.js 주문 데이터
 const orderData = {
-  // 기존 필드들...
-  deliveryType: isDirectDelivery ? "direct" : "partner",
-  deliveryAddress: isDirectDelivery ? {
-    roadAddress: "...",
-    jibunAddress: "...",
-    detailAddress: "...",
-    coordinates: { lat: x.xxxx, lng: y.yyyy }
-  } : null,
-  deliveryFee: isDirectDelivery ? calculateFee : 0,
-  // ...
+  storeId,
+  items: cartItems,
+  customerInfo: {
+    name: customerName,
+    phone: customerPhone
+  },
+  deliveryAddress: {
+    roadAddress: addressData.roadAddress,
+    jibunAddress: addressData.jibunAddress,
+    detailAddress: addressData.detailAddress,
+    coordinate: addressData.coordinate
+  },
+  deliveryFee: deliveryFee,
+  distance: addressData.distance,
+  totalAmount: subtotal + deliveryFee,
+  specialRequests: specialRequests,
+  orderType: "direct_delivery"
 };
 ```
 
@@ -163,55 +183,8 @@ const orderData = {
 
 ### 2. 카카오 지도 API (좌표 변환)
 ```javascript
-// REST API 방식 사용 (월 300,000건 무료)
+// REST API 방식 사용
 // 주소 → 좌표 변환용
-```
-
----
-
-## 🚀 구현 단계별 계획
-
-### Phase 1: 핵심 기능 (2-3일)
-1. **배달타입 판별 로직** 구현
-2. **AddressInput 컴포넌트** 개발
-3. **거리계산 및 배송비** 로직 구현
-4. **조건부 UI** 연동
-
-### Phase 2: 완성도 향상 (1-2일)
-1. **에러 처리** 및 유효성 검증
-2. **로딩 상태** UI 개선
-3. **스타일링** 완성
-4. **테스트** 및 버그 수정
-
-### Phase 3: 배포 및 최적화 (1일)
-1. **가상상점 설정** 및 QR코드 생성
-2. **실제 배달권역** 테스트
-3. **성능 최적화**
-4. **모니터링** 설정
-
----
-
-## 📊 데이터베이스 스키마 확장
-
-### Orders 컬렉션 추가 필드
-```javascript
-{
-  // 기존 필드들...
-  deliveryType: "direct" | "partner",
-  deliveryAddress: {
-    roadAddress: String,
-    jibunAddress: String, 
-    detailAddress: String,
-    postalCode: String,
-    coordinates: {
-      lat: Number,
-      lng: Number
-    }
-  } | null,
-  deliveryFee: Number,
-  distance: Number, // km 단위
-  // ...
-}
 ```
 
 ---
@@ -234,81 +207,105 @@ const orderData = {
 ### 배송비 표시
 ```
 📍 배달 정보
-├── 주소: 서울시 강남구 테헤란로 123
 ├── 거리: 2.1km
 ├── 배송비: 2,000원
-└── 예상 배달시간: 20-30분
+└── 주문 확인 후 정확한 배송시간 안내
+```
+
+### 배송 및 결제 안내
+```
+📦 배송 및 결제 안내
+├── 💡 안전한 결제: 포트원 보안 결제 시스템
+├── 💳 간편 결제: 카드 결제 가능
+├── 📞 배송 확인: SMS 알림 발송
+├── 🚚 신선 배송: 주문 확인 후 20~60분 내 배송
+├── 💰 최소 주문: 15,000원 이상
+└── 📍 배송비: 거리에 따라 무료~3,000원
 ```
 
 ---
 
-## ⚠️ 주의사항 및 고려사항
+## ⚠️ 현재 해결해야 할 이슈
 
-### 1. 기존 시스템 안정성
-- **제휴상점 주문은 100% 기존 로직 유지**
-- **조건부 처리로 신규 기능과 완전 분리**
-- **롤백 가능한 구조로 설계**
-
-### 2. 성능 최적화
-- **API 호출 최소화** (주소 변경시에만 좌표 변환)
-- **거리 계산 캐싱** (같은 주소 재계산 방지)
-- **배달불가 지역 빠른 판별**
-
-### 3. 에러 처리
-- **API 호출 실패시** 대체 플로우
-- **GPS/주소 변환 실패시** 사용자 안내
-- **배달불가 지역** 명확한 안내 메시지
-
-### 4. 확장성
-- **배송비 구간 설정** 관리자 페이지에서 수정 가능하게
-- **배달권역 확장** 용이하게 설계
-- **배달대행 연동** 추후 가능하게 구조 설계
-
----
-
-## 💰 비용 절감 효과
-
-### 현재 배달앱 수수료
-- **배달의민족**: 주문금액의 6.8% + α
-- **쿠팡이츠**: 주문금액의 9.8% + α  
-- **요기요**: 주문금액의 5.9% + α
-
-### 직배송 도입 효과
-- **수수료 절약**: 주문당 1,000-3,000원
-- **고객 데이터 확보**: 직접적인 고객 관계 구축
-- **마케팅 자율성**: 플랫폼 정책에 의존하지 않음
-
----
-
-## 🎯 예상 결과
-
-### 단기 목표 (1-3개월)
-- **직배송 주문 비율**: 전체 주문의 10-20%
-- **수수료 절약**: 월 50-100만원
-- **고객 데이터베이스**: 500-1000명 구축
-
-### 장기 목표 (6-12개월)  
-- **직배송 주문 비율**: 전체 주문의 40-60%
-- **수수료 절약**: 월 200-500만원
-- **고객 충성도**: 재주문율 30% 이상
-
----
-
-## 📞 구현 후 고객 안내 문구
-
-### 전단지/자석스티커 문구
+### 1. 포트원 결제 연동 오류
 ```
-🍦 요거트퍼플 직주문으로 더 저렴하게!
-
-❌ 배달앱 수수료 NO!
-✅ 동일한 맛, 더 나은 서비스
-✅ 반경 1.5km 무료배송
-✅ 최소주문 15,000원
-
-📱 QR코드 스캔하고 주문하세요!
+오류: 판매자 코드가 설정되지 않았습니다. 
+IMP.init() 또는 IMP.agency() 함수를 먼저 호출하세요.
 ```
 
+**해결 방안:**
+- 기존 OrderPage.js의 포트원 초기화 방식 확인
+- DirectOrderForm.js에 동일한 초기화 로직 적용
+- 환경변수 설정 확인
+
+### 2. 개발 정보 보안
+- ~~채널키, 스토어ID 노출 문제~~ ✅ **해결완료**
+- 회사 정보로 교체 완료 (리치컴퍼니, Eric Yoon 연락처)
+
+### 3. UI 개선사항
+- ~~PC 화면 모달 크기 문제~~ ✅ **해결완료**
+- ~~폰트 색상 가독성 문제~~ ✅ **해결완료**
+- ~~예상시간 표시 혼란~~ ✅ **해결완료**
+
 ---
 
-이 기획서를 바탕으로 체계적으로 구현하시면 됩니다! 
-며칠 후에 이 문서와 함께 다시 만나서 멋진 기능을 완성해봐요! 🚀✨
+## 🚀 다음 단계
+
+### Phase 1: 포트원 결제 연동 완료
+1. **기존 OrderPage.js 포트원 초기화 방식** 분석
+2. **DirectOrderForm.js 결제 로직** 수정
+3. **결제 테스트** 및 검증
+
+### Phase 2: 최종 테스트 및 완성도 향상
+1. **전체 플로우 테스트**
+2. **에러 처리** 보완
+3. **모바일 반응형** 최종 확인
+4. **성능 최적화**
+
+### Phase 3: 배포 준비
+1. **가상상점 설정** (storeId: yogurt-purple-direct)
+2. **QR코드 생성** 
+3. **실제 배달권역** 테스트
+4. **모니터링** 설정
+
+---
+
+## 📊 완성된 파일 목록
+
+src/
+├── pages/
+│   └── OrderPage.js (수정됨)
+│
+├── components/
+│   └── Order/
+│       ├── OrderForm.js (기존)
+│       ├── OrderForm.css (기존)
+│       ├── DirectOrderForm.js (✨ 신규)
+│       ├── DirectOrderForm.css (✨ 신규)
+│       └── AddressInput.js (✨ 신규)
+│
+└── utils/
+    ├── deliveryUtils.js (✨ 신규)
+    └── constants.js (✨ 신규)
+
+### ✅ 완료된 파일
+- **DirectOrderForm.js** - 직배송 전용 주문 폼
+- **DirectOrderForm.css** - 전용 스타일 (PC 최적화)
+- **AddressInput.js** - 주소입력 컴포넌트
+- **deliveryUtils.js** - 배송 유틸리티 함수
+- **constants.js** - 설정값 관리
+
+### 🔧 수정된 파일  
+- **OrderPage.js** - 조건부 DirectOrderForm 렌더링 추가
+
+### ⚡ 주요 특징
+- **기존 시스템 무손상** - 제휴상점 주문 100% 기존 방식 유지
+- **모듈화 설계** - 독립적인 컴포넌트 구조
+- **반응형 UI** - PC/모바일 최적화
+- **확장 가능** - 추후 기능 추가 용이
+
+---
+
+
+
+**현재 상태: 포트원 결제 연동만 완료하면 배포 가능한 수준** 🎯

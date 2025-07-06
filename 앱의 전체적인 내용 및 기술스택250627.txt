@@ -1,0 +1,431 @@
+# 요거트 아이스크림 주문앱 전체 문서
+
+## 앱 개요
+
+### 기본 정보
+- **앱 타입**: 요거트 아이스크림 주문앱
+- **기술 스택**: React (프론트엔드) + Firebase (백엔드)
+- **대상**: 제휴상점 방문 고객
+- **배포**: Firebase Hosting
+
+### 비즈니스 모델
+- 일반 고객 대상이 아닌 **제휴상점 기반 주문 시스템**
+- 제휴상점(삼겹살집 등)에 QR코드 부착
+- 고객이 QR코드 스캔 → 앱 주문화면 접속
+- 후식 개념으로 아이스크림 주문
+- **직접 배달** 방식
+
+### 제휴상점 혜택
+1. **포인트 페이백**: 주문 금액의 일정 퍼센트 적립 (거리/적극성에 따라 차등)
+2. **서비스 차별화**: 외부음식 반입 금지 → 후식 주문 서비스 제공
+
+## 앱 아키텍처
+
+### 프로젝트 구조
+```
+src/
+├── App.js                    # 메인 앱 컴포넌트 및 라우팅
+├── index.js                  # React 앱 진입점
+├── contexts/
+│   └── AuthContext.js        # 인증 컨텍스트 (추정)
+├── components/
+│   ├── Login.js              # 로그인 컴포넌트
+│   ├── AdminDashboard.js     # 관리자 대시보드
+│   ├── UserOrder.js          # 메인 홈페이지
+│   ├── PaymentComplete.js    # 결제 완료 페이지
+│   ├── gifticon/
+│   │   └── CustomerGifticonCheck.js  # 기프티콘 확인 페이지
+│   └── [법적 페이지들]
+│       ├── TermsPage.js      # 이용약관
+│       ├── PrivacyPolicy.js  # 개인정보처리방침
+│       ├── RefundPolicy.js   # 환불정책
+│       └── CompanyInfo.js    # 사업자정보
+└── pages/
+    └── OrderPage.js          # QR코드 주문 페이지
+```
+
+### Firebase 설정
+```json
+{
+  "functions": { "runtime": "nodejs18" },
+  "hosting": { 
+    "public": "build",
+    "rewrites": [{"source": "**", "destination": "/index.html"}]
+  }
+}
+```
+
+## 라우팅 구조
+
+### 공개 페이지
+- `/` - 메인 홈페이지 (UserOrder 컴포넌트)
+- `/order/:storeId` - 상점별 QR코드 주문 페이지
+- `/check/:gifticonId` - 기프티콘 잔액/내역 확인
+- `/terms` - 이용약관
+- `/privacy` - 개인정보처리방침
+- `/refund` - 환불정책
+- `/company` - 사업자정보
+- `/payment-complete` - 결제 완료
+
+### 관리자 페이지
+- `/admin` - 관리자 대시보드 (권한 체크 포함)
+
+## 주요 기능
+
+### 1. 주문 시스템
+- **QR코드 기반 주문**: `/order/:storeId` 경로로 상점별 주문
+- **최소 정보 수집**: 전화번호만 필수, 테이블번호/요청사항은 선택
+- **주문 프로세스**:
+  1. 고객 주문 → 관리자에게 알림
+  2. 관리자가 배달소요시간 선택 후 주문확인
+  3. 고객에게 SMS 알림 발송
+  4. 배달 완료 후 주문완료 처리
+
+### 2. 기프티콘 시스템
+- **충전식 기프티콘**: QR코드 생성 후 라벨지 출력
+- **실물카드**: 매장 적립카드에 기프티콘 QR 부착
+- **고객 기능**: 
+  - 잔액/사용내역 확인 (`/check/:gifticonId`)
+  - 매장 전화걸기 버튼
+- **관리자 기능**:
+  - 스캔라이브러리를 통한 즉시 사용처리
+  - 충전, 사용정지, 사용재개 관리
+
+### 3. 사용자 권한 시스템
+```javascript
+// AuthContext에서 제공하는 권한
+const { currentUser, userRole, isAdmin, isShopOwner, isPartner } = useAuth();
+```
+- **isAdmin**: 관리자 권한
+- **isPartner**: 파트너 권한  
+- **isShopOwner**: 상점 오너 권한 (추정)
+
+## 컴포넌트 분석
+
+### App.js
+- **주요 기능**: 라우팅 및 권한 기반 페이지 접근 제어
+- **사용된 라이브러리**: 
+  - `react-router-dom`: BrowserRouter, Routes, Route
+  - `AuthContext`: 커스텀 인증 컨텍스트
+- **특징**: 관리자 페이지 접근 시 권한 체크 및 에러 페이지 표시
+
+### 권한 보호 로직
+```javascript
+!currentUser ? <Login /> : 
+(!isAdmin && !isPartner) ? <AccessDenied /> : 
+<AdminDashboard />
+```
+
+## 사용된 라이브러리 및 의존성
+
+### package.json 분석
+```json
+{
+  "name": "okyogurt",
+  "version": "0.1.0",
+  "dependencies": {
+    "@portone/browser-sdk": "^0.0.21",     // 포트원 결제 SDK
+    "@zxing/library": "^0.21.3",          // QR코드 스캔 라이브러리
+    "firebase": "^11.8.1",                // Firebase SDK
+    "html2canvas": "^1.4.1",              // HTML을 캐치로 변환
+    "qrcode": "^1.5.4",                   // QR코드 생성
+    "react": "^19.1.0",                   // React 프레임워크
+    "react-dom": "^19.1.0",               // React DOM
+    "react-qr-code": "^2.0.15",           // React QR코드 컴포넌트
+    "react-router-dom": "^7.6.1",         // React 라우팅
+    "react-scripts": "5.0.1"              // Create React App 스크립트
+  }
+}
+```
+
+## 인증 시스템 (AuthContext.js)
+
+### 주요 기능
+- **Firebase Auth + Firestore 통합 인증**
+- **다중 권한 시스템**: super_admin, admin, store_owner, partner
+- **실시간 상태 관리**: onAuthStateChanged 사용
+
+### 권한 체계
+```javascript
+const isAdmin = userRole === 'super_admin' || userRole === 'admin';
+const isShopOwner = userRole === 'store_owner';
+const isPartner = userRole === 'partner' || userRole === 'store_owner';
+const isSuperAdmin = userRole === 'super_admin';
+```
+
+### 제공하는 함수들
+- `login(email, password)` - Firebase Auth + Firestore 조회
+- `signup(email, password, role)` - 계정 생성 + Firestore 저장
+- `logout()` - 로그아웃 및 상태 초기화
+
+### Firestore 컬렉션 구조
+- `users` 컬렉션: 사용자 정보 및 권한 저장
+  - email, role, createdAt, updatedAt, isActive
+  - store_owner의 경우 storeId 필드 추가
+
+## 관리자 대시보드 (AdminDashboard.js)
+
+### 메뉴 구조
+```javascript
+const menuItems = [
+  { id: 'orders', name: '주문 관리', icon: '📋', adminOnly: true },
+  { id: 'business', name: '영업시간 관리', icon: '🕐', adminOnly: true },
+  { id: 'stores', name: '상점 관리', icon: '🏪', adminOnly: true },
+  { id: 'menu', name: '메뉴 관리', icon: '🍦', adminOnly: true },
+  { id: 'gifticon', name: '기프티콘 관리', icon: '🎁', adminOnly: true },
+  { id: 'points', name: '포인트 내역', icon: '💎', adminOnly: false },
+  { id: 'accounts', name: '계정 관리', icon: '👤', adminOnly: true },
+  { id: 'stats', name: '통계 분석', icon: '📊', adminOnly: true }
+];
+```
+
+### 주요 특징
+- **권한별 메뉴 필터링**: adminOnly 속성으로 메뉴 접근 제한
+- **알림 시스템**: NotificationManager 컴포넌트 통합
+- **모바일 반응형**: 모바일 사이드바 토글 기능
+- **알림 토글**: localStorage 기반 알림 ON/OFF 설정
+
+### 컴포넌트 의존성
+- OrderManagement, StoreManagement, MenuManagement
+- GifticonManagement, PointsManagement, BusinessHoursManagement
+- StatsDashboard, AccountManagement, NotificationManager
+
+## QR코드 주문 페이지 (OrderPage.js)
+
+### 핵심 기능
+
+#### 1. 디버깅 시스템
+- **mobile_debug_logs**: localStorage 기반 모바일 디버깅
+- **debugLogger**: 상세한 로깅 시스템 (100개 로그 제한)
+- **PC 확인 함수**: `window.getDebugLogs()`, `window.clearDebugLogs()`
+
+#### 2. 주문 처리 흐름
+```javascript
+// 주문 데이터 구조
+const orderData = {
+  orderNumber: 'ORD' + Date.now(),
+  storeId, storeName, items, amount,
+  phone, tableNumber, specialRequests,
+  paymentId, paymentStatus, paymentResponse,  // 결제 정보
+  status: 'paid' | 'pending',
+  createdAt: new Date()
+};
+```
+
+#### 3. 포인트 적립 시스템
+- **자동 포인트 적립**: 주문 완료 시 상점 포인트율에 따라 적립
+- **Firestore 컬렉션**: 
+  - `store_points`: 포인트 적립 내역
+  - `store_point_balance`: 상점별 포인트 잔액
+
+#### 4. SMS 알림 시스템
+```javascript
+const SMS_ENDPOINT = 'https://sendtestsms-b245qv2hpq-uc.a.run.app';
+// 관리자에게 새주문 알림 발송
+```
+
+#### 5. 비즈니스 로직
+- **최소주문금액**: 11,000원 이상
+- **배송비**: 11,000원 미만 시 10원
+- **상점명 7회 터치**: 관리자 모드 접근
+- **영업시간 체크**: useBusinessHours 훅 사용
+
+### 주요 상태 관리
+```javascript
+const [store, setStore] = useState(null);           // 상점 정보
+const [menus, setMenus] = useState([]);             // 메뉴 목록
+const [cart, setCart] = useState([]);               // 장바구니
+const [selectedMenu, setSelectedMenu] = useState(null);
+const [showCart, setShowCart] = useState(false);
+const [showOrderForm, setShowOrderForm] = useState(false);
+```
+
+## 기프티콘 시스템
+
+### CustomerGifticonCheck.js - 고객용 기프티콘 확인
+- **라우팅**: `/check/:gifticonId`
+- **기능**: 잔액 조회, 사용내역 확인, 매장 전화걸기
+- **상태 표시**: 사용가능, 만료, 사용정지 등
+- **UI**: 그라데이션 기반 모던한 디자인
+
+### GifticonDashboard.js - 관리자용 기프티콘 관리
+- **통합 대시보드**: 생성, 관리, 사용처리, 통계
+- **AdminQRScanner**: 통합된 QR 스캔 및 사용처리
+- **실시간 Firebase 연동**
+
+### 의존 서비스
+- **GifticonService**: Firebase 기프티콘 CRUD 작업
+- **GifticonUtils**: 포맷팅, 상태 계산 유틸리티
+
+## Firebase 컬렉션 구조
+
+### 주요 컬렉션
+1. **users**: 사용자 정보 및 권한
+2. **stores**: 제휴상점 정보 및 포인트율
+3. **menus**: 메뉴 정보 (category, isAvailable)
+4. **orders**: 주문 정보 (결제상태 포함)
+5. **store_points**: 포인트 적립 내역
+6. **store_point_balance**: 상점별 포인트 잔액
+7. **gifticons**: 기프티콘 정보 (Firebase 자동 생성)
+
+## 메인 홈페이지 (UserOrder.js)
+
+### 전략적 랜딩페이지 기능
+- **매장 선택 페이지**: Firebase에서 실시간 매장 목록 로드
+- **시범 운영점**: 고정 ID `ntNHEyN6dubXeLwAAssS`로 직접 체험 가능
+- **비즈니스 어필**: 혁신 기술, 시스템 소개, 파트너십 문의
+
+### Firebase 쿼리
+```javascript
+const storesQuery = query(
+  collection(db, 'stores'),
+  orderBy('createdAt', 'desc')
+);
+```
+
+### 주요 UI 섹션
+1. **Hero Section**: QR 주문 시스템 소개 및 주요 기능 어필
+2. **System Intro**: 4단계 주문 프로세스 안내
+3. **Partner Stores**: 시범점 + 실제 제휴점 목록
+4. **Tech Showcase**: 보안결제, 클라우드, 데이터분석, 맞춤UI
+5. **CTA Section**: 파트너십 문의 (이메일/전화)
+
+## 주문 폼 및 결제 시스템 (OrderForm.js)
+
+### 포트원 결제 시스템
+```javascript
+// 포트원 V2 SDK 사용
+import * as PortOne from "@portone/browser-sdk/v2";
+
+const paymentConfig = {
+  storeId: process.env.REACT_APP_PORTONE_STORE_ID,
+  channelKey: process.env.REACT_APP_PORTONE_CHANNEL_KEY,
+  paymentId: `payment-${Date.now()}`,
+  orderName: '요거트퍼플 아이스크림',
+  totalAmount: totalPrice,
+  currency: "CURRENCY_KRW",
+  payMethod: "CARD",
+  redirectUrl: `${window.location.origin}/payment-complete`
+};
+```
+
+### 모바일 결제 처리
+- **localStorage 백업**: 모바일 리디렉션 대비 데이터 저장
+- **PC/모바일 분기**: PC는 즉시 처리, 모바일은 리디렉션 후 처리
+- **결제 상태**: 'completed' | 'pending'
+
+### 폼 구조
+- **필수 정보**: 전화번호만 (SMS 알림용)
+- **선택 정보**: 테이블번호, 요청사항
+- **유효성 검사**: 전화번호 정규식 `/^010-?\d{4}-?\d{4}$/`
+
+## Firebase 설정 (firebase.js)
+
+### 프로젝트 정보
+```javascript
+const firebaseConfig = {
+  apiKey: "AIzaSyCRQ8wTlyL-iFSRk_8E52T7_j0o4WTjDpQ",
+  authDomain: "okyogurt-8923e.firebaseapp.com",
+  projectId: "okyogurt-8923e",
+  storageBucket: "okyogurt-8923e.firebasestorage.app",
+  messagingSenderId: "677585995800",
+  appId: "1:677585995800:web:44102e3843922a6f271b6d"
+};
+```
+
+### 내보내는 서비스
+- `auth`: Firebase Authentication
+- `db`: Firestore Database
+- `functions`: Cloud Functions
+- `storage`: Cloud Storage
+- `googleProvider`: Google OAuth
+
+## 기프티콘 서비스 (gifticonService.js)
+
+### 주요 메서드
+
+#### 기본 CRUD
+- `createGifticon(gifticonData)`: 기프티콘 생성
+- `getGifticon(gifticonId)`: ID로 조회
+- `getGifticons(filters)`: 목록 조회 (필터링/정렬/제한)
+
+#### 사용 처리
+- `processGifticonUsage(gifticonId, usageData)`: 사용 처리
+- 잔액 확인, 만료일 체크, 정지 상태 확인
+- 사용 내역 `gifticon_usage` 컬렉션에 기록
+
+#### 관리 기능
+- `blockGifticon(gifticonId, blockData)`: 사용 정지
+- `unblockGifticon(gifticonId, unblockData)`: 사용 재개
+- `rechargeGifticon(gifticonId, rechargeData)`: 충전
+- `getStatusLogs(gifticonId)`: 상태 변경 로그 조회
+
+#### 통계
+- `getStatistics()`: 전체 기프티콘 통계
+- 총 개수, 금액, 사용액, 활성/사용완료/만료/정지 수
+
+### Firestore 컬렉션 구조
+- `gifticons`: 기프티콘 기본 정보
+- `gifticon_usage`: 사용 내역
+- `gifticon_status_logs`: 상태 변경 로그
+
+## Firebase Functions (index.js)
+
+### Cloud Functions 목록
+
+#### 1. SMS 발송 (`sendTestSMS`)
+```javascript
+// CoolSMS v4 API 사용
+const coolsmsApiKey = defineSecret('COOLSMS_API_KEY');
+const coolsmsApiSecret = defineSecret('COOLSMS_API_SECRET');
+```
+- HMAC-SHA256 인증 방식
+- 관리자 알림용 SMS 발송
+- CORS 설정 포함
+
+#### 2. 주문 조회 (`checkNewOrders`)
+- 최근 5분간 새 주문 조회
+- 관리자 대시보드 알림 시스템용
+
+#### 3. 관리자 테스트 (`testAdmin`)
+- Admin SDK 동작 확인
+- Firestore 쓰기 테스트
+
+#### 4. 상점 계정 생성 (`createStoreOwner`)
+- Admin SDK로 사용자 생성 (로그인 상태 영향 없음)
+- Users + Stores 컬렉션 동시 생성
+- storeId 연결
+
+### 보안 설정
+- **Secret Manager**: API 키 보안 저장
+- **CORS**: 브라우저 요청 허용
+- **Admin SDK**: 서버사이드 권한으로 Firestore 접근
+
+## 전체 시스템 아키텍처 요약
+
+### 기술 스택
+- **Frontend**: React 19.1.0 + React Router DOM 7.6.1
+- **Backend**: Firebase (Auth, Firestore, Functions, Storage)
+- **결제**: 포트원(PortOne) V2 SDK
+- **QR**: @zxing/library (스캔) + qrcode (생성)
+- **SMS**: CoolSMS v4 API
+- **UI**: 커스텀 CSS + 반응형 디자인
+
+### 데이터 플로우
+1. **QR 스캔** → **주문 페이지** → **장바구니** → **주문 폼**
+2. **포트원 결제** → **Firebase 저장** → **SMS 알림** → **포인트 적립**
+3. **관리자 알림** → **주문 확인** → **배달** → **완료 처리**
+
+### 권한 체계
+- **super_admin**: 모든 기능 접근
+- **admin**: 관리 기능 (통계 제외)
+- **store_owner**: 포인트 내역만
+- **partner**: store_owner와 동일
+
+### 핵심 비즈니스 로직
+- **최소주문**: 11,000원
+- **배송비**: 11,000원 미만 시 10원
+- **포인트**: 상점별 차등 적립률
+- **기프티콘**: 충전식, 정지/재개 가능
+
+이제 완전한 앱 문서가 완성되었습니다! 🎉

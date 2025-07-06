@@ -125,7 +125,7 @@ function BlockModal({
           }}>
             <div><strong>기프티콘:</strong> {gifticon.id}</div>
             <div><strong>구매자:</strong> {gifticon.purchaserName}</div>
-            <div><strong>현재 잔액:</strong> {GifticonUtils.formatAmount(gifticon.remainingAmount || gifticon.amount)}</div>
+            <div><strong>현재 잔액:</strong> {GifticonUtils.formatAmount(gifticon.remainingAmount ?? gifticon.amount)}</div>
           </div>
 
           {/* 정지 사유 선택 */}

@@ -1,10 +1,9 @@
-// src/components/GifticonDashboard.js (업데이트된 버전)
+// src/components/GifticonDashboard.js (완전 수정된 버전)
 import React, { useState } from 'react';
 import GifticonCreate from './GifticonCreate';
 import GifticonList from './GifticonList';
-import GifticonScan from './GifticonScan';
 import GifticonStats from './GifticonStats';
-import AdminQRScanner from './AdminQRScanner'; // NEW!
+import AdminQRScanner from './AdminQRScanner';
 
 function GifticonDashboard() {
   const [activeMenu, setActiveMenu] = useState('overview');
@@ -13,12 +12,13 @@ function GifticonDashboard() {
     { id: 'overview', name: '대시보드', icon: '🏠' },
     { id: 'create', name: '기프티콘 생성', icon: '➕' },
     { id: 'list', name: '기프티콘 관리', icon: '📋' },
-    { id: 'qr-scanner', name: 'QR 스캔', icon: '📱' }, // NEW!
-    { id: 'scan', name: '수동 사용처리', icon: '✋' },
+    { id: 'usage-process', name: '사용 처리', icon: '📱' }, // 통합된 메뉴
     { id: 'stats', name: '통계', icon: '📊' }
   ];
 
   const renderContent = () => {
+    console.log('현재 activeMenu:', activeMenu);
+
     switch (activeMenu) {
       case 'overview':
         return (
@@ -89,9 +89,9 @@ function GifticonDashboard() {
                   기프티콘 생성
                 </button>
 
-                {/* QR 스캔 */}
+                {/* 사용 처리 (통합됨) */}
                 <button
-                  onClick={() => setActiveMenu('qr-scanner')}
+                  onClick={() => setActiveMenu('usage-process')}
                   style={{
                     background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
                     color: 'white',
@@ -108,7 +108,7 @@ function GifticonDashboard() {
                   onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
                 >
                   <div style={{ fontSize: '32px', marginBottom: '10px' }}>📱</div>
-                  QR 스캔
+                  사용 처리
                 </button>
 
                 {/* 기프티콘 관리 */}
@@ -179,11 +179,8 @@ function GifticonDashboard() {
       case 'list':
         return <GifticonList onBack={() => setActiveMenu('overview')} />;
       
-      case 'qr-scanner':
-        return <AdminQRScanner onBack={() => setActiveMenu('overview')} />; // NEW!
-      
-      case 'scan':
-        return <GifticonScan onBack={() => setActiveMenu('overview')} />;
+      case 'usage-process': // 통합된 사용처리
+        return <AdminQRScanner onBack={() => setActiveMenu('overview')} />;
       
       case 'stats':
         return (

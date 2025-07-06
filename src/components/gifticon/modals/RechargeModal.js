@@ -117,7 +117,7 @@ function RechargeModal({
           <div><strong>기프티콘:</strong> {gifticon.id}</div>
           <div><strong>구매자:</strong> {gifticon.purchaserName}</div>
           <div><strong>현재 금액:</strong> {GifticonUtils.formatAmount(gifticon.amount)}</div>
-          <div><strong>현재 잔액:</strong> {GifticonUtils.formatAmount(gifticon.remainingAmount || gifticon.amount)}</div>
+          <div><strong>현재 잔액:</strong> {GifticonUtils.formatAmount(gifticon.remainingAmount ?? gifticon.amount)}</div>
           {gifticon.totalRecharged > 0 && (
             <div><strong>총 충전액:</strong> {GifticonUtils.formatAmount(gifticon.totalRecharged)} ({gifticon.rechargeCount}회)</div>
           )}
@@ -269,10 +269,10 @@ function RechargeModal({
             color: '#155724'
           }}>
             <h4 style={{ margin: '0 0 10px 0' }}>💎 충전 후 예상 금액</h4>
-            <div><strong>현재 잔액:</strong> {GifticonUtils.formatAmount(gifticon.remainingAmount || gifticon.amount)}</div>
+            <div><strong>현재 잔액:</strong> {GifticonUtils.formatAmount(gifticon.remainingAmount ?? gifticon.amount)}</div>
             <div><strong>충전 금액:</strong> +{GifticonUtils.formatAmount(parseInt(rechargeForm.rechargeAmount))}</div>
             <div style={{ borderTop: '1px solid #c3e6cb', paddingTop: '10px', marginTop: '10px' }}>
-              <strong>충전 후 잔액:</strong> {GifticonUtils.formatAmount((gifticon.remainingAmount || gifticon.amount) + parseInt(rechargeForm.rechargeAmount))}
+              <strong>충전 후 잔액:</strong> {GifticonUtils.formatAmount((gifticon.remainingAmount ?? gifticon.amount) + parseInt(rechargeForm.rechargeAmount))}
             </div>
           </div>
         )}

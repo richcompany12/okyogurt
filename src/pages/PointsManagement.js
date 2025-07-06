@@ -26,6 +26,8 @@ const PointsManagement = () => {
   const [selectedStore, setSelectedStore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [filteredStoreId, setFilteredStoreId] = useState(null);
+  const [filteredStoreName, setFilteredStoreName] = useState('');
   const [adjustmentData, setAdjustmentData] = useState({
     storeId: '',
     storeName: '',
@@ -220,6 +222,17 @@ const PointsManagement = () => {
     }
   };
 
+const handleStoreFilter = (storeId, storeName) => {
+  if (filteredStoreId === storeId) {
+    // 이미 선택된 상점을 다시 클릭하면 필터 해제
+    setFilteredStoreId(null);
+    setFilteredStoreName('');
+  } else {
+    setFilteredStoreId(storeId);
+    setFilteredStoreName(storeName);
+  }
+};
+
   // 날짜 포맷
   const formatDate = (timestamp) => {
     if (!timestamp) return '-';
@@ -290,7 +303,11 @@ const PointsManagement = () => {
                     <span className="amount">{(balance?.totalPoints || 0).toLocaleString()}P</span>
                   </div>
                   
-                  <div className="balance-details">
+                  <div 
+                    className="balance-details" 
+                    onClick={() => handleStoreFilter(store.id, store.name)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className="detail">
                       <span>총 적립</span>
                       <span>{(balance?.totalEarned || 0).toLocaleString()}P</span>
@@ -334,8 +351,26 @@ const PointsManagement = () => {
       {/* 포인트 내역 */}
       <div className="section">
         <div className="section-header">
-          <h2>📋 포인트 내역</h2>
-        </div>
+  <h2>📋 포인트 내역</h2>
+  {filteredStoreName && (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+      <span style={{ color: '#666' }}>🔍 {filteredStoreName} 내역만 표시 중</span>
+      <button 
+        onClick={() => {setFilteredStoreId(null); setFilteredStoreName('');}}
+        style={{ 
+          background: '#f0f0f0', 
+          border: 'none', 
+          borderRadius: '4px', 
+          padding: '4px 8px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}
+      >
+        전체 보기
+      </button>
+    </div>
+  )}
+</div>
 
         <div className="history-table">
           <table>
@@ -351,7 +386,10 @@ const PointsManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {pointsHistory.slice(0, 50).map(record => (
+              {pointsHistory
+                .filter(record => filteredStoreId ? record.storeId === filteredStoreId : true)
+                .slice(0, 50)
+                .map(record => (
                 <tr key={record.id}>
                   <td>{formatDate(record.createdAt)}</td>
                   <td>{record.storeName}</td>
