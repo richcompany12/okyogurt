@@ -122,14 +122,10 @@ export class GifticonUtils {
   }
 
   // QR 코드용 데이터 생성
-  static generateQRData(gifticonId) {
-    return JSON.stringify({
-      type: 'gifticon',
-      id: gifticonId,
-      timestamp: Date.now(),
-      v: '1.0' // 버전 정보
-    });
-  }
+static generateQRData(gifticonId) {
+  const baseURL = window.location.origin;
+  return `${baseURL}/check/${gifticonId}`;
+}
 
   // 고객용 조회 URL 생성
 static generateCustomerURL(gifticonId) {

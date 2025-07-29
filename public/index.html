@@ -9,7 +9,23 @@
     
     <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/yogurt-purple-icon.ico" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- 🎯 안전한 manifest 로딩 - 오직 /admin 페이지에서만 다른 manifest 사용 -->
+    <script>
+      (function() {
+        var isAdminPage = window.location.pathname.indexOf('/admin') !== -1;
+        var manifestPath = isAdminPage ? 
+          '%PUBLIC_URL%/admin-manifest.json' : 
+          '%PUBLIC_URL%/manifest.json';
+        
+        document.write('<link rel="manifest" href="' + manifestPath + '" />');
+        
+        // 어드민 페이지면 제목도 변경 (기존 서비스에는 영향 없음)
+        if (isAdminPage) {
+          document.title = '요거트퍼플 관리자';
+        }
+      })();
+    </script>
     
     <title>요거트퍼플 | 제휴상점 무료배달</title>
     
@@ -124,17 +140,19 @@
       // DOM이 준비되면 리액트 로딩 체크 시작
       document.addEventListener('DOMContentLoaded', function() {
         // 리액트 앱이 마운트되었는지 주기적으로 체크
-        const checkReactMount = () => {
-          const root = document.getElementById('root');
+        var checkReactMount = function() {
+          var root = document.getElementById('root');
           // root에 내용이 생기면 리액트 앱이 시작된 것
           if (root && root.children.length > 0) {
-            const loader = document.getElementById('initial-loading-screen');
+            var loader = document.getElementById('initial-loading-screen');
             if (loader) {
               // 부드럽게 사라지기
               loader.classList.add('hide');
               // 완전히 제거
-              setTimeout(() => {
-                loader.remove();
+              setTimeout(function() {
+                if (loader.parentNode) {
+                  loader.parentNode.removeChild(loader);
+                }
               }, 300);
             }
           } else {

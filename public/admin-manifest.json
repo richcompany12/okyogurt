@@ -1,0 +1,28 @@
+{
+  "short_name": "요거트퍼플 관리자",
+  "name": "요거트퍼플 관리자 시스템", 
+  "icons": [
+    {
+      "src": "yogurt-purple-icon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "yogurt-purple-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "yogurt-purple-512.png",
+      "type": "image/png", 
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/admin",
+  "scope": "/admin/",
+  "display": "standalone",
+  "theme_color": "#667eea",
+  "background_color": "#667eea",
+  "description": "요거트퍼플 관리자 시스템",
+  "orientation": "portrait"
+}

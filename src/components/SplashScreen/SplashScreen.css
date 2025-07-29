@@ -475,17 +475,20 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* 경장하지? - 특별 효과 강화! + 🆕 사운드 타이밍 맞춤 */
+/* 🚀 경장하지? - 가독성 대폭 개선! */
 .text-line.line4 {
-  font-size: 30px;
+  font-size: 32px;  /* 크기 증가 */
   font-weight: 900;
   margin-top: 25px;
   animation: kyeongJangEffect 1.5s ease-out 2.5s forwards;
-  background: linear-gradient(45deg, #ffd700, #ff6b9d, #667eea);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 0 40px rgba(255, 215, 0, 1);
+  color: #FFD700 !important;  /* 확실한 금색 */
+  text-shadow: 
+    0 0 20px rgba(255, 215, 0, 1),
+    0 0 40px rgba(255, 215, 0, 0.8),
+    2px 2px 4px rgba(0, 0, 0, 0.5);  /* 가독성을 위한 검은 그림자 */
+  /* 그라데이션 제거로 호환성 확보 */
+  background: none;
+  -webkit-text-fill-color: initial;
   filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
 }
 
@@ -616,7 +619,7 @@
   }
   
   .text-line.line4 {
-    font-size: 24px;
+    font-size: 28px;  /* 모바일에서도 크게 */
   }
 
   .background-logo {
@@ -648,7 +651,7 @@
   }
   
   .text-line.line4 {
-    font-size: 20px;
+    font-size: 24px;  /* 작은 화면에서도 충분히 크게 */
   }
 
   .background-logo {
