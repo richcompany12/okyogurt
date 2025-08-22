@@ -1,6 +1,6 @@
 // src/components/BusinessHoursChecker.js
 import { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 // 영업시간 체크 커스텀 훅
@@ -15,7 +15,54 @@ export const useBusinessHours = () => {
 
   useEffect(() => {
     checkBusinessHours();
+    
+    // 🕛 자동 리셋 체크 - 1분마다 실행
+    const interval = setInterval(checkMidnightReset, 60000);
+    
+    return () => clearInterval(interval);
   }, []);
+
+  // 🕛 자정 자동 리셋 체크 함수
+  const checkMidnightReset = async () => {
+    try {
+      const now = new Date();
+      const currentTime = now.getHours() * 60 + now.getMinutes(); // 분 단위로 변환
+      
+      // 자정(00:00) 체크 - 정확히 00:00 또는 00:01 사이
+      if (currentTime <= 1) {
+        console.log('🕛 자정 체크 시작...');
+        
+        const docRef = doc(db, 'business_hours', 'main');
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const today = new Date().toISOString().split('T')[0];
+          
+          // 긴급휴무 상태이고 날짜가 바뀌었으면 리셋
+          if (data.isEmergencyClosed && data.lastEmergencyDate && data.lastEmergencyDate !== today) {
+            console.log('🌅 새로운 날! 긴급휴무 자동 리셋 실행:', data.lastEmergencyDate, '->', today);
+            
+            await updateDoc(docRef, {
+              isEmergencyClosed: false,
+              emergencyCloseReason: "",
+              lastEmergencyDate: null,
+              autoResetAt: new Date(),
+              updatedAt: new Date(),
+              updatedBy: "system_auto_reset"
+            });
+            
+            console.log('✅ 긴급휴무 자동 리셋 완료');
+            
+            // 상태 업데이트하여 즉시 반영
+            checkBusinessHours();
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ 자동 리셋 체크 오류:', error);
+    }
+  };
 
   const checkBusinessHours = async () => {
     try {
@@ -37,6 +84,29 @@ export const useBusinessHours = () => {
 
       const data = docSnap.data();
       const now = new Date();
+      
+      // 🌅 앱 시작 시 날짜 체크 및 자동 리셋
+      const today = new Date().toISOString().split('T')[0];
+      if (data.isEmergencyClosed && data.lastEmergencyDate && data.lastEmergencyDate !== today) {
+        console.log('🌅 앱 시작 시 날짜 변경 감지! 긴급휴무 자동 리셋:', data.lastEmergencyDate, '->', today);
+        
+        await updateDoc(docRef, {
+          isEmergencyClosed: false,
+          emergencyCloseReason: "",
+          lastEmergencyDate: null,
+          autoResetAt: new Date(),
+          updatedAt: new Date(),
+          updatedBy: "system_auto_reset"
+        });
+        
+        // 리셋된 데이터로 다시 체크
+        const updatedDocSnap = await getDoc(docRef);
+        const updatedData = updatedDocSnap.data();
+        data.isEmergencyClosed = false;
+        data.emergencyCloseReason = "";
+        
+        console.log('✅ 앱 시작 시 자동 리셋 완료');
+      }
       
       // 현재 시간 정보
       const currentDay = getCurrentDayKey(now);
@@ -241,6 +311,26 @@ export const checkBusinessStatus = async () => {
 
     const data = docSnap.data();
     const now = new Date();
+    
+    // 🌅 날짜 체크 및 자동 리셋 (단발성 체크용)
+    const today = new Date().toISOString().split('T')[0];
+    if (data.isEmergencyClosed && data.lastEmergencyDate && data.lastEmergencyDate !== today) {
+      console.log('🌅 단발성 체크 시 날짜 변경 감지! 긴급휴무 자동 리셋');
+      
+      await updateDoc(docRef, {
+        isEmergencyClosed: false,
+        emergencyCloseReason: "",
+        lastEmergencyDate: null,
+        autoResetAt: new Date(),
+        updatedAt: new Date(),
+        updatedBy: "system_auto_reset"
+      });
+      
+      // 리셋 후 데이터 업데이트
+      data.isEmergencyClosed = false;
+      data.emergencyCloseReason = "";
+    }
+    
     const currentDay = getCurrentDayKey(now);
     const currentTime = getCurrentTimeString(now);
     const currentDateString = getCurrentDateString(now);
