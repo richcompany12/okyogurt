@@ -35,6 +35,22 @@ function AdminDashboard() {
 
   const [activeMenu, setActiveMenu] = useState(getDefaultMenu());
 
+React.useEffect(() => {
+    // 🔔 NotificationManager가 로드되고 window에 함수가 정의되었는지 확인
+    if (window.initOrderNotification) {
+      console.log('🎵 알림 초기화 함수 실행 시도');
+      window.initOrderNotification();
+    } else {
+      // 🚨 아주 낮은 확률로 NotificationManager보다 먼저 로드될 경우를 대비
+      const interval = setInterval(() => {
+        if (window.initOrderNotification) {
+          window.initOrderNotification();
+          clearInterval(interval);
+        }
+      }, 500);
+    }
+  }, []); // 마운트 시 1회 실행
+
   // 🔔 알림 토글 핸들러
   const handleNotificationToggle = () => {
     const newState = !notificationEnabled;
@@ -170,6 +186,22 @@ function AdminDashboard() {
                 </div>
               </div>
             )}
+
+           {/* 💡 추가: 알림 테스트 버튼 (권한 획득용) */}
+            {isAdmin && (
+              <button 
+                className="btn btn-sm btn-secondary"
+                onClick={() => {
+                  window.testNotification?.();
+                  if (!window.testNotification) {
+                    alert('알림 시스템이 준비되지 않았습니다. 잠시 후 다시 시도하세요.');
+                  }
+                }}
+                style={{ marginTop: '10px' }}
+              >
+                🔔 알림 테스트 (권한 확인)
+              </button>
+            )} 
           </div>
         </div>
 

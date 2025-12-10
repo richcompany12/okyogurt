@@ -18,7 +18,13 @@ const StoreForm = ({
     phone: '',
     description: '',
     isActive: true,
-    pointRate: 5 // ✅ 추가: 포인트 적립률 (기본값 5%)
+    pointRate: 5, // ✅ 기존 적립률
+    // 💡 추가: 상점별 노출 탭 설정 (기본값 모두 노출)
+    visible_tabs: {
+      YOGURT: true,
+      BUNGEO: true,
+      COFFEE: true,
+    }
   });
 
   // 수정 모드인 경우 기존 데이터 로드
@@ -30,7 +36,9 @@ const StoreForm = ({
         phone: store.phone || '',
         description: store.description || '',
         isActive: store.isActive !== undefined ? store.isActive : true,
-        pointRate: store.pointRate || 5 // ✅ 기존 적립률 또는 기본값 5%
+        pointRate: store.pointRate || 5,
+        // 💡 추가: 기존 탭 설정값 로드 (없으면 기본값 사용)
+        visible_tabs: store.visible_tabs || { YOGURT: true, BUNGEO: true, COFFEE: true },
       });
     }
   }, [store]);
@@ -38,6 +46,18 @@ const StoreForm = ({
   // 입력값 변경 처리
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    
+    // 💡 추가: 탭 노출 체크박스 처리
+    if (name === 'YOGURT' || name === 'BUNGEO' || name === 'COFFEE') {
+      setFormData(prev => ({
+        ...prev,
+        visible_tabs: {
+          ...prev.visible_tabs,
+          [name]: checked
+        }
+      }));
+      return;
+    }
     
     // 포인트 적립률 처리
     if (name === 'pointRate') {
@@ -216,6 +236,51 @@ const StoreForm = ({
             </small>
           </div>
 
+{/* 💡 추가: 탭 노출 설정 체크박스 그룹 */}
+          <div className="form-group tab-visibility-group">
+            <label>메뉴 탭 노출 설정</label>
+            <div className="tab-checkboxes">
+              
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="YOGURT"
+                  checked={formData.visible_tabs.YOGURT}
+                  onChange={handleChange}
+                  disabled // 요거트는 필수이므로 비활성화
+                />
+                <span className="checkbox-custom"></span>
+                요거트 아이스크림
+              </label>
+
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="BUNGEO"
+                  checked={formData.visible_tabs.BUNGEO}
+                  onChange={handleChange}
+                />
+                <span className="checkbox-custom"></span>
+                붕어빵
+              </label>
+
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  name="COFFEE"
+                  checked={formData.visible_tabs.COFFEE}
+                  onChange={handleChange}
+                />
+                <span className="checkbox-custom"></span>
+                커피 및 음료
+              </label>
+            </div>
+            <small className="form-hint">
+              체크된 탭만 해당 상점의 QR코드를 통한 주문 화면에 노출됩니다.
+              요거트 아이스크림은 기본 노출되며 비활성화할 수 없습니다.
+            </small>
+          </div>
+          
           <div className="form-group checkbox-group">
             <label className="checkbox-label">
               <input

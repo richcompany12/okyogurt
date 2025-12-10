@@ -11,15 +11,18 @@ const MenuManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingMenu, setEditingMenu] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
 
   // 새 메뉴/수정 폼 데이터
   const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    description: '',
-    image: '',
-    isAvailable: true
-  });
+  name: '',
+  price: '',
+  description: '',
+  image: '',
+  isAvailable: true,
+  // 💡 추가: 메뉴가 속하는 탭 (요거트, 붕어빵, 커피)
+  category_tab: 'YOGURT' 
+});
 
   const [errors, setErrors] = useState({});
   const [imageFile, setImageFile] = useState(null);
@@ -152,6 +155,7 @@ const MenuManagement = () => {
         description: formData.description.trim(),
         image: imageUrl,
         isAvailable: formData.isAvailable,
+        category_tab: formData.category_tab,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -191,6 +195,7 @@ const MenuManagement = () => {
         description: formData.description.trim(),
         image: imageUrl,
         isAvailable: formData.isAvailable,
+        category_tab: formData.category_tab,
         updatedAt: new Date()
       };
 
@@ -248,7 +253,9 @@ const MenuManagement = () => {
       price: menu.price.toString(),
       description: menu.description,
       image: menu.image || '',
-      isAvailable: menu.isAvailable
+      isAvailable: menu.isAvailable,
+      // 💡 추가: 기존 메뉴는 category_tab이 없으면 'YOGURT'로 설정
+      category_tab: menu.category_tab || 'YOGURT'
     });
     setImageFile(null);
     setImagePreview(menu.image || null);
@@ -277,10 +284,17 @@ const MenuManagement = () => {
   };
 
   // 메뉴 필터링
+// 메뉴 필터링 (검색 + 카테고리 필터 적용)
   const filteredMenus = menus.filter(menu => {
+    // 1. 검색어 매칭
     const matchesSearch = menu.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       menu.description.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+      
+    // 2. 카테고리 매칭
+    const menuCategory = menu.category_tab || 'YOGURT'; // 필드가 없으면 기본값 YOGURT
+    const matchesCategory = categoryFilter === 'ALL' || menuCategory === categoryFilter;
+    
+    return matchesSearch && matchesCategory;
   });
 
   if (loading) {
@@ -317,6 +331,19 @@ const MenuManagement = () => {
             className="search-input"
           />
         </div>
+       {/* 💡 추가: 카테고리 필터 드롭다운 */}
+        <div className="filter-section">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="ALL">📦 전체 메뉴 보기</option>
+            <option value="YOGURT">🍦 요거트 아이스크림</option>
+            <option value="BUNGEO">🐟 붕어빵</option>
+            <option value="COFFEE">☕ 커피 및 음료</option>
+          </select> 
+          </div>
       </div>
 
       {/* 메뉴 추가/수정 폼 */}
@@ -337,6 +364,20 @@ const MenuManagement = () => {
                   className={errors.name ? 'error' : ''}
                 />
                 {errors.name && <span className="error-message">{errors.name}</span>}
+              </div>
+
+              <div className="form-group">
+                <label>메뉴 분류 탭 *</label>
+                <select
+                  name="category_tab"
+                  value={formData.category_tab}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="YOGURT">요거트 아이스크림</option>
+                  <option value="BUNGEO">붕어빵</option>
+                  <option value="COFFEE">커피 및 음료</option>
+                </select>
               </div>
 
               <div className="form-group">

@@ -7,16 +7,44 @@ function NotificationManager() {
   const audioRef = useRef(null);
   const isInitialLoadRef = useRef(true);
 
-  // 🎵 오디오 초기화
-  useEffect(() => {
+// 🎵 오디오 초기화 및 정책 우회 함수
+  const initAudioContext = () => {
+    if (audioRef.current) return; // 이미 초기화됨
+
     audioRef.current = new Audio('/sounds/psy.mp3');
     audioRef.current.volume = 0.8;
     audioRef.current.preload = 'auto';
+
+    // 💡 브라우저 정책 우회를 위한 재생 시도
+    // 이 코드는 사용자 상호작용(클릭 등) 이후에 호출되어야 합니다.
+    audioRef.current.play()
+      .then(() => {
+        console.log('🎵 알림 사운드 초기화 및 자동 재생 권한 획득 성공');
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      })
+      .catch((error) => {
+        console.warn('⚠️ 알림 사운드 자동 재생 권한 획득 실패:', error.name, error.message);
+        // 실패하더라도 나중에 playSound가 호출될 때 다시 시도합니다.
+      });
+  };
+
+  // 컴포넌트 마운트 시 오디오 컨텍스트 초기화 함수를 window에 노출
+  useEffect(() => {
+    window.initOrderNotification = initAudioContext;
     
-    console.log('🎵 알림 사운드 초기화 완료');
+    // 🔔 알림 권한 미리 요청
+    if (!("Notification" in window)) {
+      console.warn("이 브라우저는 데스크톱 알림을 지원하지 않습니다.");
+    } else if (Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+
+    console.log('✅ 알림 관리자 초기화 완료');
+    // 기존의 useEffect는 이 코드로 대체되었습니다.
   }, []);
 
-  // 🔔 알림 표시 함수
+// 🔔 알림 표시 함수
   const showNotification = (title, body, playSound = false) => {
     console.log('🔔 알림 표시 시작:', title);
     
@@ -42,16 +70,23 @@ function NotificationManager() {
     }
 
     // 🎵 사운드 재생
-    if (playSound && audioRef.current) {
-      console.log('🎵 알림 사운드 재생 시도...');
+    if (playSound) {
+      // 💡 추가: 사운드 재생 시 초기화 함수 호출을 시도하여 오디오 컨텍스트를 활성화
+      // 이 함수는 클릭 이벤트 컨텍스트를 상속하여 자동 재생 제한을 해제하려고 시도합니다.
+      window.initOrderNotification?.(); 
       
-      audioRef.current.play()
-        .then(() => {
-          console.log('✅ 알림 사운드 재생 성공');
-        })
-        .catch(error => {
-          console.warn('❌ 사운드 재생 실패:', error);
-        });
+      if (audioRef.current) {
+        console.log('🎵 알림 사운드 재생 시도...');
+        
+        audioRef.current.currentTime = 0;
+        audioRef.current.play()
+          .then(() => {
+            console.log('✅ 알림 사운드 재생 성공');
+          })
+          .catch(error => {
+            console.warn('❌ 사운드 재생 실패:', error);
+          });
+      }
     }
   };
 

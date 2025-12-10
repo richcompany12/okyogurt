@@ -289,3 +289,45 @@
     width: 100%;
   }
 }
+
+/* 💡 탭 노출 설정 그룹 컨테이너 (새로 추가) */
+.tab-visibility-group {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 20px;
+    border: 1px dashed #ced4da; /* 구분선을 점선으로 하여 강조 */
+}
+
+.tab-visibility-group > label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #495057;
+    display: block;
+}
+
+/* 체크박스들을 유연하게 배치 */
+.tab-checkboxes {
+    display: flex;
+    flex-wrap: wrap; /* 작은 화면에서 줄바꿈 */
+    gap: 15px;
+    margin-top: 10px;
+}
+
+/* 개별 체크박스 라벨 */
+.tab-checkboxes .checkbox-label {
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ✅ 요거트 아이스크림은 비활성화 상태임을 표시 */
+.tab-checkboxes .checkbox-label input:disabled + .checkbox-custom {
+    background: #e9ecef;
+    border-color: #ced4da;
+}
+.tab-checkboxes .checkbox-label input:disabled ~ span {
+    color: #6c757d;
+}

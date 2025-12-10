@@ -24,6 +24,13 @@ import OrderForm from '../components/Order/OrderForm';
 import './OrderPage.css';
 import SimpleFooter from '../components/SimpleFooter';
 
+// 💡 탭 설정 상수 추가
+const TAB_CONFIG = {
+  YOGURT: { name: '요거트 아이스크림', order: 1 },
+  BUNGEO: { name: '붕어빵', order: 2 },
+  COFFEE: { name: '커피 및 음료', order: 3 },
+};
+
 // 🔧 임시 디버깅 로거 (버그 해결 후 제거 예정)
 const debugLogger = {
   log: (step, message, data = null) => {
@@ -105,6 +112,8 @@ const OrderPage = () => {
   const [cart, setCart] = useState([]);
   const [selectedMenu, setSelectedMenu] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('YOGURT'); // 현재 활성화된 탭
+  const [visibleTabs, setVisibleTabs] = useState(null); // 상점의 노출 설정
   const [showCart, setShowCart] = useState(false);
   const [showOrderForm, setShowOrderForm] = useState(false);
   const businessStatus = useBusinessHours();
@@ -122,7 +131,7 @@ const OrderPage = () => {
     setAppState('main');
   };
 
-  // 상점 정보 로드
+// 상점 정보 로드
   useEffect(() => {
     const loadStoreData = async () => {
       try {
@@ -138,6 +147,19 @@ const OrderPage = () => {
         
         if (storeDoc.exists()) {
           const storeData = { id: storeDoc.id, ...storeDoc.data() };
+          
+          // 💡 수정: 탭 노출 설정 로드 및 초기 탭 설정 로직 추가
+          const loadedVisibleTabs = storeData.visible_tabs || { 
+            YOGURT: true, 
+            BUNGEO: false, 
+            COFFEE: false // 붕어빵/커피를 판매하지 않는 상점의 기본값
+          };
+          setVisibleTabs(loadedVisibleTabs);
+
+          // 첫 번째로 노출이 허용된 탭을 찾아서 활성화
+          const firstVisibleTab = Object.keys(loadedVisibleTabs).find(key => loadedVisibleTabs[key]) || 'YOGURT';
+          setActiveTab(firstVisibleTab);
+          
           setStore(storeData);
           debugLogger.log('STORE_LOAD_SUCCESS', '상점 정보 로드 성공', storeData);
         } else {
@@ -241,6 +263,8 @@ const fallbackUnsubscribe = onSnapshot(fallbackQuery, (snapshot) => {
   };
 
   // 카테고리별 메뉴 그룹화
+// 🗑️ (삭제) 카테고리별 메뉴 그룹화 함수 (더 이상 사용하지 않음)
+  /*
   const getMenusByCategory = () => {
     const grouped = menus.reduce((acc, menu) => {
       const category = menu.category && menu.category.trim() !== '' 
@@ -255,6 +279,7 @@ const fallbackUnsubscribe = onSnapshot(fallbackQuery, (snapshot) => {
     }, {});
     return grouped;
   };
+  */
 
   const handleStoreNameTap = () => {
     debugLogger.log('STORE_NAME_TAP', '상점명 터치', { currentTapCount: tapCount });
@@ -567,7 +592,7 @@ const fallbackUnsubscribe = onSnapshot(fallbackQuery, (snapshot) => {
 
     case 'main':
     default:
-      const menusByCategory = getMenusByCategory();
+      //const menusByCategory = getMenusByCategory();
       
       return (
         <div className="order-page">
@@ -607,11 +632,35 @@ const fallbackUnsubscribe = onSnapshot(fallbackQuery, (snapshot) => {
 
           {/* 메뉴 리스트 */}
           <main className="menu-container">
-            {Object.entries(menusByCategory).map(([category, categoryMenus]) => (
-              <section key={category} className="menu-category">
-                <h2 className="category-title">{category}</h2>
-                <div className="menu-grid">
-                  {categoryMenus.map(menu => (
+{/* 💡 탭 바 컴포넌트 추가 */}
+            {visibleTabs && (
+              <div className="tab-bar-container">
+                <div className="tab-bar">
+                  {Object.keys(TAB_CONFIG)
+                    .filter(key => visibleTabs[key]) // 상점에 허용된 탭만 필터링
+                    .sort((a, b) => TAB_CONFIG[a].order - TAB_CONFIG[b].order) // 순서 정렬
+                    .map(key => (
+                      <button
+                        key={key}
+                        className={`tab-item ${activeTab === key ? 'active' : ''}`}
+                        onClick={() => setActiveTab(key)}
+                      >
+                        {TAB_CONFIG[key].name}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* 💡 필터링된 메뉴 리스트 */}
+            <div className="menu-list-container">
+              {menus.length > 0 ? (
+                <div className="menu-list">
+                  
+                  {/* activeTab과 메뉴의 category_tab이 일치하는 메뉴만 표시 */}
+                  {menus
+                    .filter(menu => (menu.category_tab || 'YOGURT') === activeTab)
+                    .map(menu => (
                     <div 
                       key={menu.id} 
                       className="menu-card"
@@ -644,21 +693,28 @@ const fallbackUnsubscribe = onSnapshot(fallbackQuery, (snapshot) => {
                       </div>
                     </div>
                   ))}
-                </div>
-              </section>
-            ))}
 
-            {menus.length === 0 && (
-              <div className="empty-menu">
-                <div className="empty-content">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L13.09 8.26L22 9L13.09 9.74L12 16L10.91 9.74L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
-                  </svg>
-                  <h3>준비 중인 메뉴입니다</h3>
-                  <p>곧 맛있는 메뉴들을 만나보실 수 있어요!</p>
+                  {/* 💡 선택된 탭에 메뉴가 없을 경우 메시지 표시 */}
+                  {menus.filter(menu => (menu.category_tab || 'YOGURT') === activeTab).length === 0 && (
+                    <div className="empty-state-message">
+                      <p>{TAB_CONFIG[activeTab]?.name || '메뉴'}가 아직 등록되지 않았습니다.</p>
+                      <p>관리자에게 문의해주세요.</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="empty-menu">
+                  <div className="empty-content">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 2L13.09 8.26L22 9L13.09 9.74L12 16L10.91 9.74L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
+                    </svg>
+                    <h3>준비 중인 메뉴입니다</h3>
+                    <p>곧 맛있는 메뉴들을 만나보실 수 있어요!</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            
           </main>
 
           {/* 메뉴 상세 모달 */}
