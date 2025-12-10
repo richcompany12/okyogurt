@@ -163,8 +163,10 @@ const OrderForm = ({ cart, totalPrice, storeId, onSubmit, onBack }) => {
           <div className="summary-items">
             {cart.map(item => (
               <div key={item.id} className="summary-item">
-                <span className="item-name">{item.name}</span>
-                <span className="item-quantity">×{item.quantity}</span>
+                <div className="item-info">
+                  <span className="item-name">{item.name}</span>
+                  <span className="item-quantity">×{item.quantity}</span>
+                </div>
                 <span className="item-price">{(item.price * item.quantity).toLocaleString()}원</span>
               </div>
             ))}
@@ -180,8 +182,8 @@ const OrderForm = ({ cart, totalPrice, storeId, onSubmit, onBack }) => {
 
         {/* 간소화된 주문 정보 입력 */}
         <div className="customer-form">
-          <h3>📱 결제 정보</h3>
-          <p className="form-description">간단한 정보만 입력하시면 결제가 진행됩니다!</p>
+          <h3>📱 주문 정보</h3>
+          <p className="form-description">간단한 정보만 입력하시면 주문이 완료됩니다!</p>
           
           <form onSubmit={handleSubmit}>
             {/* 전화번호 (필수) */}
@@ -200,33 +202,33 @@ const OrderForm = ({ cart, totalPrice, storeId, onSubmit, onBack }) => {
                 maxLength={13}
               />
               {errors.phone && <span className="error-message">{errors.phone}</span>}
-              <small className="form-hint">결제 및 주문 확인을 위해 필요합니다</small>
+              <small className="form-hint">주문 확인 및 배달 알림을 위해 필요합니다</small>
             </div>
 
             {/* 테이블 정보 (선택) */}
             <div className="form-group">
-              <label htmlFor="tableNumber">테이블 위치 (선택)</label>
+              <label htmlFor="tableNumber">테이블 위치 <span className="optional">(선택)</span></label>
               <input
                 type="text"
                 id="tableNumber"
                 name="tableNumber"
                 value={formData.tableNumber}
                 onChange={handleChange}
-                placeholder="예: 3번 테이블, 창가쪽 2번 자리"
+                placeholder="예: 3번 테이블, 창가쪽 2번"
                 maxLength={50}
               />
-              <small className="form-hint">테이블 번호나 위치를 알려주시면 더 빠른 배달이 가능합니다</small>
+              <small className="form-hint">매장 내 위치를 알려주시면 더 빠른 서비스가 가능해요</small>
             </div>
 
             {/* 요청사항 (선택) */}
             <div className="form-group">
-              <label htmlFor="specialRequests">요청사항 (선택)</label>
+              <label htmlFor="specialRequests">요청사항 <span className="optional">(선택)</span></label>
               <textarea
                 id="specialRequests"
                 name="specialRequests"
                 value={formData.specialRequests}
                 onChange={handleChange}
-                placeholder="특별한 요청사항이 있으시면 입력해주세요"
+                placeholder="특별한 요청사항이 있으시면 자유롭게 적어주세요"
                 rows="3"
                 maxLength={200}
               />
@@ -240,7 +242,7 @@ const OrderForm = ({ cart, totalPrice, storeId, onSubmit, onBack }) => {
                 onClick={onBack}
                 disabled={loading}
               >
-                ← 메뉴로 돌아가기
+                ← 메뉴 선택
               </button>
               
               <button 
@@ -263,26 +265,47 @@ const OrderForm = ({ cart, totalPrice, storeId, onSubmit, onBack }) => {
           </form>
         </div>
 
-        {/* 결제 안내 메시지 */}
-        <div className="payment-notice">
-          <h4>💳 결제 안내</h4>
-          <ul>
-            <li>💡 <strong>안전한 결제:</strong> 포트원 보안 결제 시스템을 사용합니다</li>
-            <li>📱 <strong>간편 결제:</strong> 카드 결제가 가능합니다</li>
-            <li>📞 <strong>주문 확인:</strong> 결제 완료 후 SMS로 알림을 보내드립니다</li>
-            <li>🚚 <strong>빠른 배달:</strong> 주문 확인 후 5-60분 내 배달 완료</li>
-          </ul>
+        {/* 주문 및 배달 안내 */}
+        <div className="order-notice">
+          <h4>🚀 주문 및 배달 안내</h4>
+          <div className="notice-grid">
+            <div className="notice-item">
+              <span className="notice-icon">💳</span>
+              <div className="notice-content">
+                <strong>안전한 결제</strong>
+                <p>포트원 보안 결제 시스템</p>
+              </div>
+            </div>
+            
+            <div className="notice-item">
+              <span className="notice-icon">📱</span>
+              <div className="notice-content">
+                <strong>주문 확인</strong>
+                <p>결제 완료 후 SMS 알림</p>
+              </div>
+            </div>
+            
+            <div className="notice-item">
+              <span className="notice-icon">⏰</span>
+              <div className="notice-content">
+                <strong>빠른 배달</strong>
+                <p>평균 10-20분 내 배달</p>
+              </div>
+            </div>
+            
+            <div className="notice-item">
+              <span className="notice-icon">📞</span>
+              <div className="notice-content">
+                <strong>배달 시간</strong>
+                <p>정확한 소요시간은 매장에서 주문 확인 후 문자로 안내</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* 환경 정보 (개발용 - 나중에 제거) */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="dev-info" style={{ 
-            marginTop: '20px', 
-            padding: '10px', 
-            backgroundColor: '#f0f0f0', 
-            borderRadius: '5px',
-            fontSize: '12px' 
-          }}>
+          <div className="dev-info">
             <h5>🔧 개발 정보</h5>
             <p>Store ID: {process.env.REACT_APP_PORTONE_STORE_ID}</p>
             <p>Channel Key: {process.env.REACT_APP_PORTONE_CHANNEL_KEY}</p>

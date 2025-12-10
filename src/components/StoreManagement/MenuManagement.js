@@ -29,7 +29,7 @@ const MenuManagement = () => {
   // Firebase에서 메뉴 데이터 실시간 로드
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      collection(db, 'menus'), 
+      collection(db, 'menus'),
       (snapshot) => {
         const menuList = snapshot.docs.map(doc => ({
           id: doc.id,
@@ -84,10 +84,10 @@ const MenuManagement = () => {
 
       // 파일 업로드
       await uploadBytes(imageRef, file);
-      
+
       // 다운로드 URL 가져오기
       const downloadURL = await getDownloadURL(imageRef);
-      
+
       return downloadURL;
     } catch (error) {
       console.error('이미지 업로드 오류:', error);
@@ -140,7 +140,7 @@ const MenuManagement = () => {
 
     try {
       let imageUrl = '';
-      
+
       // 이미지가 선택되었으면 업로드
       if (imageFile) {
         imageUrl = await uploadImage(imageFile);
@@ -157,11 +157,11 @@ const MenuManagement = () => {
       };
 
       await addDoc(collection(db, 'menus'), menuData);
-      
+
       // 폼 초기화
       resetForm();
       setShowAddForm(false);
-      
+
       alert('메뉴가 성공적으로 추가되었습니다!');
     } catch (error) {
       console.error('메뉴 추가 오류:', error);
@@ -179,7 +179,7 @@ const MenuManagement = () => {
 
     try {
       let imageUrl = formData.image; // 기존 이미지 URL 유지
-      
+
       // 새 이미지가 선택되었으면 업로드
       if (imageFile) {
         imageUrl = await uploadImage(imageFile);
@@ -195,10 +195,10 @@ const MenuManagement = () => {
       };
 
       await updateDoc(doc(db, 'menus', editingMenu.id), menuData);
-      
+
       resetForm();
       setEditingMenu(null);
-      
+
       alert('메뉴가 성공적으로 수정되었습니다!');
     } catch (error) {
       console.error('메뉴 수정 오류:', error);
@@ -218,6 +218,25 @@ const MenuManagement = () => {
     } catch (error) {
       console.error('메뉴 삭제 오류:', error);
       alert('메뉴 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 품절 토글
+  const toggleAvailability = async (menuId, currentStatus, menuName) => {
+    const newStatus = !currentStatus;
+    const statusText = newStatus ? '판매중' : '품절';
+
+    if (!window.confirm(`'${menuName}' 메뉴를 ${statusText}으로 변경하시겠습니까?`)) return;
+
+    try {
+      await updateDoc(doc(db, 'menus', menuId), {
+        isAvailable: newStatus,
+        updatedAt: new Date()
+      });
+      alert(`메뉴가 ${statusText}으로 변경되었습니다!`);
+    } catch (error) {
+      console.error('메뉴 상태 변경 오류:', error);
+      alert('메뉴 상태 변경 중 오류가 발생했습니다.');
     }
   };
 
@@ -260,7 +279,7 @@ const MenuManagement = () => {
   // 메뉴 필터링
   const filteredMenus = menus.filter(menu => {
     const matchesSearch = menu.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         menu.description.toLowerCase().includes(searchTerm.toLowerCase());
+      menu.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
@@ -278,7 +297,7 @@ const MenuManagement = () => {
       {/* 헤더 */}
       <div className="management-header">
         <h2>🍦 메뉴 관리</h2>
-        <button 
+        <button
           className="btn btn-primary"
           onClick={() => setShowAddForm(true)}
           disabled={editingMenu}
@@ -305,7 +324,7 @@ const MenuManagement = () => {
         <div className="menu-form-container">
           <div className="menu-form">
             <h3>{editingMenu ? '메뉴 수정' : '새 메뉴 추가'}</h3>
-            
+
             <div className="form-grid">
               <div className="form-group">
                 <label>메뉴명 *</label>
@@ -347,11 +366,11 @@ const MenuManagement = () => {
                   <label htmlFor="image-upload" className="image-upload-label">
                     {imagePreview ? '이미지 변경' : '이미지 선택'}
                   </label>
-                  
+
                   {imagePreview && (
                     <div className="image-preview">
                       <img src={imagePreview} alt="미리보기" />
-                      <button 
+                      <button
                         type="button"
                         onClick={() => {
                           setImageFile(null);
@@ -363,7 +382,7 @@ const MenuManagement = () => {
                       </button>
                     </div>
                   )}
-                  
+
                   <small className="image-help">
                     권장 크기: 300x200px, 최대 5MB
                   </small>
@@ -397,15 +416,15 @@ const MenuManagement = () => {
             </div>
 
             <div className="form-actions">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn btn-secondary"
                 onClick={cancelForm}
               >
                 취소
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn btn-primary"
                 onClick={editingMenu ? handleEditMenu : handleAddMenu}
                 disabled={uploading}
@@ -437,29 +456,38 @@ const MenuManagement = () => {
                   <div className="unavailable-badge">품절</div>
                 )}
               </div>
-              
+
               <div className="menu-info">
                 <h4>{menu.name}</h4>
                 <p className="menu-description">{menu.description}</p>
                 <p className="menu-price">{menu.price.toLocaleString()}원</p>
               </div>
-              
+
               <div className="menu-actions">
-                <button 
-                  className="btn btn-edit"
-                  onClick={() => startEdit(menu)}
-                  disabled={showAddForm}
-                >
-                  수정
-                </button>
-                <button 
-                  className="btn btn-delete"
-                  onClick={() => handleDeleteMenu(menu.id, menu.name)}
-                  disabled={showAddForm || editingMenu}
-                >
-                  삭제
-                </button>
-              </div>
+  <button 
+    className={`btn-toggle ${menu.isAvailable ? 'available' : 'unavailable'}`}
+    onClick={() => toggleAvailability(menu.id, menu.isAvailable, menu.name)}
+    disabled={showAddForm || editingMenu}
+  >
+    {menu.isAvailable ? '✓ 판매중' : '✕ 품절'}
+  </button>
+  <div>
+    <button 
+      className="btn btn-edit"
+      onClick={() => startEdit(menu)}
+      disabled={showAddForm}
+    >
+      수정
+    </button>
+    <button 
+      className="btn btn-delete"
+      onClick={() => handleDeleteMenu(menu.id, menu.name)}
+      disabled={showAddForm || editingMenu}
+    >
+      삭제
+    </button>
+  </div>
+</div>
             </div>
           ))}
         </div>

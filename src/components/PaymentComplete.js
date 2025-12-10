@@ -1,4 +1,4 @@
-// src/components/PaymentComplete.js
+// src/components/PaymentComplete.js - 안전장치 강화 버전
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
@@ -64,11 +64,6 @@ useEffect(() => {
           alert(`결제에 실패했습니다.\n${message || errorMsg || '다시 시도해주세요.'}`);
         }
         
-        // 로컬스토리지 정리하지 않음 (재결제 가능하도록)
-        // localStorage.removeItem('cart');
-        // localStorage.removeItem('pendingOrder');
-        // localStorage.removeItem('customerInfo');
-        
         // 원래 주문 페이지로 이동 (장바구니 유지)
         if (storeId) {
           navigate(`/order/${storeId}`);
@@ -87,6 +82,25 @@ useEffect(() => {
       }
       
       console.log('✅ 정상적인 결제 완료로 판단 - 주문 저장 진행');
+      
+      // 🆕 **중복 주문 체크**
+      const isDuplicate = await checkDuplicateOrder(paymentId);
+      if (isDuplicate) {
+        console.log('⚠️ 중복 주문 감지 - 이미 처리된 결제:', paymentId);
+        alert('이미 처리된 주문입니다.\n주문 내역을 확인해주세요.');
+        
+        // 로컬스토리지 정리
+        localStorage.removeItem('cart');
+        localStorage.removeItem('pendingOrder');
+        localStorage.removeItem('customerInfo');
+        
+        if (storeId) {
+          navigate(`/order/${storeId}`);
+        } else {
+          navigate('/');
+        }
+        return;
+      }
       
       // 로그 저장
       const debugLog = {
@@ -111,43 +125,142 @@ useEffect(() => {
         return;
       }
 
-      // 주문 저장 (결제 성공으로 판단된 경우에만)
-      await saveOrderLikeOrderPage(storeId, cartItems, customerInfo, paymentId);
+      // 🆕 **재시도 로직으로 주문 저장**
+      const saveSuccess = await saveOrderWithRetry(storeId, cartItems, customerInfo, paymentId);
       
-      console.log('✅ 주문 저장 완료');
-      
-      // 완료 후 정리
-      localStorage.removeItem('cart');
-      localStorage.removeItem('pendingOrder');
-      localStorage.removeItem('customerInfo');
-      
-      // 성공 메시지
-      alert('결제가 완료되었습니다! 주문이 접수되었습니다.');
-      
-      // 3초 후 해당 상점으로 이동
-      setTimeout(() => {
-        if (storeId) {
-          navigate(`/order/${storeId}`);
-        } else {
-          navigate('/');
-        }
-      }, 3000);
+      if (saveSuccess) {
+        console.log('✅ 주문 저장 완료');
+        
+        // 완료 후 정리
+        localStorage.removeItem('cart');
+        localStorage.removeItem('pendingOrder');
+        localStorage.removeItem('customerInfo');
+        
+        // 성공 메시지
+        alert('결제가 완료되었습니다! 주문이 접수되었습니다.');
+        
+        // 3초 후 해당 상점으로 이동
+        setTimeout(() => {
+          if (storeId) {
+            navigate(`/order/${storeId}`);
+          } else {
+            navigate('/');
+          }
+        }, 3000);
+      } else {
+        // 🚨 완전 실패 시 긴급 처리
+        console.error('💥 주문 저장 완전 실패 - 긴급 알림 발송');
+        await sendEmergencyAlert(paymentId, customerInfo, cartItems);
+        
+        alert('주문 처리 중 문제가 발생했습니다.\n고객센터로 연락주시면 빠르게 처리해드리겠습니다.\n\n결제는 완료되었으니 걱정하지 마세요.');
+        navigate('/');
+      }
       
     } catch (error) {
       console.error('❌ 결제 완료 처리 실패:', error);
+      
+      // 🚨 예외 발생 시에도 긴급 알림
+      const paymentId = searchParams.get('paymentId') || searchParams.get('payment_id');
+      const customerInfo = JSON.parse(localStorage.getItem('customerInfo') || '{}');
+      const cartItems = JSON.parse(localStorage.getItem('cart') || '[]');
+      
+      if (paymentId && customerInfo.phone) {
+        await sendEmergencyAlert(paymentId, customerInfo, cartItems, error.message);
+      }
+      
       alert('결제 처리 중 오류가 발생했습니다. 고객센터로 연락해주세요.');
-      
-      // 에러 발생 시에도 로컬스토리지 정리
-      //localStorage.removeItem('cart');
-      //localStorage.removeItem('pendingOrder');
-      //localStorage.removeItem('customerInfo');
-      
       navigate('/');
     }
   };
 
   processPaymentComplete();
 }, [navigate, searchParams]);
+
+  // 🆕 중복 주문 체크 함수
+  const checkDuplicateOrder = async (paymentId) => {
+    try {
+      const { collection, query, where, getDocs } = await import('firebase/firestore');
+      const { db } = await import('../firebase');
+      
+      console.log('🔍 중복 주문 체크 시작:', paymentId);
+      
+      const q = query(
+        collection(db, 'orders'),
+        where('paymentId', '==', paymentId)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const isDuplicate = !querySnapshot.empty;
+      
+      console.log('🔍 중복 체크 결과:', { paymentId, isDuplicate, count: querySnapshot.size });
+      
+      return isDuplicate;
+    } catch (error) {
+      console.error('❌ 중복 체크 실패:', error);
+      // 중복 체크 실패 시 안전을 위해 false 반환 (주문 진행)
+      return false;
+    }
+  };
+
+  // 🆕 재시도 로직으로 주문 저장
+  const saveOrderWithRetry = async (storeId, cartItems, customerInfo, paymentId, maxRetries = 3) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 주문 저장 시도 ${attempt}/${maxRetries}`);
+        
+        await saveOrderLikeOrderPage(storeId, cartItems, customerInfo, paymentId);
+        
+        console.log(`✅ 주문 저장 성공 (${attempt}번째 시도)`);
+        return true;
+        
+      } catch (error) {
+        console.error(`❌ 주문 저장 실패 (${attempt}번째 시도):`, error);
+        
+        if (attempt === maxRetries) {
+          console.error('💥 모든 재시도 실패');
+          return false;
+        }
+        
+        // 재시도 전 대기 (1초, 2초, 3초)
+        await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+      }
+    }
+    return false;
+  };
+
+  // 🆕 긴급 알림 발송
+  const sendEmergencyAlert = async (paymentId, customerInfo, cartItems, errorMessage = '') => {
+    try {
+      const SMS_ENDPOINT = 'https://sendtestsms-b245qv2hpq-uc.a.run.app';
+      const totalAmount = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+      
+      const emergencyMessage = `🚨 긴급: 주문 저장 실패!
+      
+💳 결제ID: ${paymentId}
+📱 고객: ${customerInfo.phone}
+💰 금액: ${totalAmount.toLocaleString()}원
+❌ 오류: ${errorMessage || '알 수 없는 오류'}
+
+즉시 수동으로 주문을 생성해주세요!`;
+
+      const response = await fetch(SMS_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: '01047474763',
+          message: emergencyMessage
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ 긴급 알림 발송 성공');
+      } else {
+        console.error('❌ 긴급 알림 발송 실패');
+      }
+    } catch (error) {
+      console.error('❌ 긴급 알림 발송 오류:', error);
+    }
+  };
 
   // OrderPage의 handleOrderSubmit과 동일한 로직
   const saveOrderLikeOrderPage = async (storeId, cart, customerInfo, paymentId) => {

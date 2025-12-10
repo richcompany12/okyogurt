@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import AdminDashboard from './components/AdminDashboard';
@@ -17,11 +17,125 @@ import CustomerGifticonCheck from './components/gifticon/CustomerGifticonCheck';
 import SplashScreen from './components/SplashScreen/SplashScreen';
 import './App.css';
 
-function AppContent() {
-  const { currentUser, userRole, isAdmin, isShopOwner, isPartner } = useAuth();
+// 접속 방식에 따른 뒤로가기 처리 훅
+function useSmartBackNavigation() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [showExitToast, setShowExitToast] = useState(false);
+  const [isQRAccess, setIsQRAccess] = useState(false);
+  const [qrStoreId, setQrStoreId] = useState(null);
+  const backPressedOnce = useRef(false);
+  const exitTimer = useRef(null);
+
+  useEffect(() => {
+    // QR 접속 여부 및 storeId 확인
+    const checkQRAccess = window.location.pathname.startsWith('/order/') && 
+                         (!document.referrer || 
+                          window.history.length <= 1 ||
+                          !document.referrer.includes(window.location.origin));
+    
+    if (checkQRAccess) {
+      const storeId = window.location.pathname.split('/order/')[1];
+      setIsQRAccess(true);
+      setQrStoreId(storeId);
+    }
+  }, []);
+
+  // 현재 위치가 홈화면인지 확인
+  const isAtHome = () => {
+    if (isQRAccess) {
+      // QR 접속 고객의 홈화면: /order/:storeId
+      return location.pathname === `/order/${qrStoreId}`;
+    } else {
+      // 일반 웹 접속 고객의 홈화면: /
+      return location.pathname === '/';
+    }
+  };
+
+  // 홈화면으로 이동
+  const goHome = () => {
+    if (isQRAccess && qrStoreId) {
+      navigate(`/order/${qrStoreId}`, { replace: true });
+    } else {
+      navigate('/', { replace: true });
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const currentlyAtHome = isAtHome();
+      
+      if (currentlyAtHome) {
+        // 홈화면에서 뒤로가기 - 두 번 눌러서 종료
+        if (backPressedOnce.current) {
+          // 두 번째 뒤로가기 - 앱 종료 (브라우저 기본 동작 허용)
+          setShowExitToast(false);
+          return; // 기본 동작 허용하여 앱 종료
+        } else {
+          // 첫 번째 뒤로가기 - 토스트 표시
+          event.preventDefault();
+          
+          backPressedOnce.current = true;
+          setShowExitToast(true);
+          
+          // 2초 후 리셋
+          exitTimer.current = setTimeout(() => {
+            backPressedOnce.current = false;
+            setShowExitToast(false);
+          }, 2000);
+        }
+      } else {
+        // 홈화면이 아닌 곳에서 뒤로가기 - 각자의 홈화면으로
+        event.preventDefault();
+        goHome();
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    // 히스토리 엔트리 추가 (뒤로가기 감지용)
+    window.history.pushState(null, null, window.location.pathname);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      if (exitTimer.current) {
+        clearTimeout(exitTimer.current);
+      }
+    };
+  }, [navigate, location.pathname, isQRAccess, qrStoreId]);
+
+  return { showExitToast };
+}
+
+// 토스트 메시지 컴포넌트
+function ExitToast({ show }) {
+  if (!show) return null;
 
   return (
-    <Router>
+    <div style={{
+      position: 'fixed',
+      bottom: '20px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      background: 'rgba(0, 0, 0, 0.8)',
+      color: 'white',
+      padding: '12px 20px',
+      borderRadius: '25px',
+      fontSize: '14px',
+      zIndex: 9999,
+      animation: 'fadeInUp 0.3s ease-out'
+    }}>
+      뒤로가기를 한 번 더 누르면 종료됩니다
+    </div>
+  );
+}
+
+function AppContent() {
+  const { currentUser, userRole, isAdmin, isShopOwner, isPartner } = useAuth();
+  const { showExitToast } = useSmartBackNavigation();
+
+  return (
+    <>
       <Routes>
         {/* 🆕 전략적 랜딩페이지 - 메인 홈 */}
         <Route path="/" element={<UserOrder />} />
@@ -81,7 +195,10 @@ function AppContent() {
           )
         } />
       </Routes>
-    </Router>
+      
+      {/* 토스트 메시지 */}
+      <ExitToast show={showExitToast} />
+    </>
   );
 }
 
@@ -154,7 +271,9 @@ function App() {
   return (
     <AuthProvider>
       <div className="App">
-        <AppContent />
+        <Router>
+          <AppContent />
+        </Router>
       </div>
     </AuthProvider>
   );

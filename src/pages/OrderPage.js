@@ -179,14 +179,16 @@ const OrderPage = () => {
         orderBy('name')
       );
       
-      const fallbackUnsubscribe = onSnapshot(fallbackQuery, (snapshot) => {
-        const menusList = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        debugLogger.log('MENU_LOAD_FALLBACK_SUCCESS', 'Fallback 메뉴 로드 성공', { count: menusList.length });
-        setMenus(menusList);
-      });
+const fallbackUnsubscribe = onSnapshot(fallbackQuery, (snapshot) => {
+  const menusList = snapshot.docs
+    .map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }))
+    .filter(menu => menu.isAvailable !== false);  // ← 이 줄 추가!
+  debugLogger.log('MENU_LOAD_FALLBACK_SUCCESS', 'Fallback 메뉴 로드 성공', { count: menusList.length });
+  setMenus(menusList);
+});
       
       return () => fallbackUnsubscribe();
     });

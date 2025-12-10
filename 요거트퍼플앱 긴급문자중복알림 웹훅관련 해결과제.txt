@@ -1,0 +1,59 @@
+요거트퍼플 QR코드 앱
+긴급 문자 알림 문제 해결내용정리
+
+주문 누락 방지 시스템 및 긴급 SMS 최적화 정리
+핵심 문제
+
+동시 주문 시 하나가 누락되는 사고 발생
+정상 주문에도 "긴급상황! 주문정보부족" SMS가 발송됨
+
+해결책: 이중 안전망 시스템
+1. PaymentComplete.js 강화 (클라이언트 측)
+추가된 안전장치:
+
+paymentId 중복 체크로 중복 방지
+Firebase 저장 실패 시 3번 재시도 (1초, 2초, 3초 간격)
+완전 실패 시 관리자(01047474763)에게 긴급 SMS 발송
+
+2. 포트원 웹훅 함수 (서버 측)
+Firebase Functions에 paymentwebhook 함수 추가:
+
+포트원이 직접 호출하는 서버 사이드 처리
+사용자 행동과 무관하게 독립적으로 실행
+paymentId 중복 체크 후 주문 생성
+
+긴급 SMS 최적화
+문제: 클라이언트와 웹훅이 동시 실행되어 웹훅이 주문 정보를 찾지 못함
+해결책 (functions/index.js 웹훅 함수 수정):
+javascriptif (!orderInfo || !orderInfo.storeId || !orderInfo.items) {
+  // 즉시 긴급 알림 대신 클라이언트 처리 확인
+  const existingOrder = await db.collection('orders')
+    .where('paymentId', '==', paymentId).get();
+  
+  if (!existingOrder.empty) {
+    return res.status(200).json({ message: '클라이언트에서 이미 처리됨' });
+  }
+  
+  // 5초 대기 후 재확인
+  setTimeout(async () => {
+    const orderAfterWait = await db.collection('orders')
+      .where('paymentId', '==', paymentId).get();
+    
+    if (orderAfterWait.empty) {
+      await sendEmergencyAlert(paymentId, amount, '클라이언트 처리 실패');
+    }
+  }, 5000);
+  
+  return res.status(200).json({ message: '클라이언트 처리 대기 중' });
+}
+동작 원리
+
+사용자 결제 완료
+PaymentComplete.js + 웹훅 동시 실행
+둘 중 하나 성공하면 중복 체크로 차단
+둘 다 실패해도 긴급 SMS로 관리자 알림
+
+결과: 주문 누락 거의 불가능 + 불필요한 긴급 SMS 대폭 감소
+
+현재 문제는 구글클라우드 빌링문제로인해서 이전 긴급sms문자가 오던 상황으로 롤백해놓은 상태
+구글 클라우드에 결제카드 등록된 카드가 유효기간문제로 오류를 일으켰던것으로 추측
