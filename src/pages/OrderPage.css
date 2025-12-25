@@ -114,16 +114,10 @@
   color: white;
   margin: 0 0 4px 0;
   letter-spacing: -0.5px;
-  
-  /* 🌟 2024 트렌드 네온 브리딩 효과 */
   text-shadow: 0 0 10px rgba(255,255,255,0.8);
   animation: neonBreathing 2.8s ease-in-out infinite;
-  
-  /* 🔧 JavaScript 인라인 스타일 덮어쓰기 */
   cursor: pointer !important;
   user-select: none !important;
-  
-  /* 🌟 박스 효과 제거 */
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
@@ -207,11 +201,12 @@
   letter-spacing: -0.3px;
 }
 
-/* 🔥 메뉴 그리드 - 더 넓은 간격 */
+/* 🔥 메뉴 그리드 - 데스크톱 2~4개 컬럼 고정 */
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 28px;
+  max-width: 100%;
 }
 
 /* 🌟 새로운 정사각형 메뉴 카드 + 랜덤 글로우 */
@@ -226,13 +221,9 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   position: relative;
-  
-  /* 🌟 전체 카드를 정사각형으로 */
   aspect-ratio: 1;
   display: flex;
   flex-direction: column;
-  
-  /* 🌟 랜덤 글로우 애니메이션 */
   animation: randomGlow 4s ease-in-out infinite;
 }
 
@@ -285,13 +276,6 @@
 .menu-card:hover::before {
   opacity: 1;
 }
-
-.menu-card:nth-child(1) { animation-delay: 0.1s; opacity: 1; }
-.menu-card:nth-child(2) { animation-delay: 0.2s; opacity: 1; }
-.menu-card:nth-child(3) { animation-delay: 0.3s; opacity: 1; }
-.menu-card:nth-child(4) { animation-delay: 0.4s; opacity: 1; }
-.menu-card:nth-child(5) { animation-delay: 0.5s; opacity: 1; }
-.menu-card:nth-child(6) { animation-delay: 0.6s; opacity: 1; }
 
 /* 🌟 정사각형 이미지 영역 - 8:2 비율에서 8 */
 .menu-image {
@@ -369,7 +353,7 @@
 
 /* 🔥 목록에서 설명 숨김 */
 .menu-description {
-  display: none; /* 목록에서는 완전히 숨김 */
+  display: none;
 }
 
 /* 빈 메뉴 상태 */
@@ -821,6 +805,61 @@
   background: #a4afb7;
 }
 
+/* ============================= */
+/* 💡 탭 바 스타일 시작 */
+/* ============================= */
+
+.tab-bar-container {
+    position: sticky;
+    top: 0;
+    z-index: 99;
+    background-color: #f8f8f8; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tab-bar {
+    display: flex;
+    justify-content: flex-start;
+    gap: 12px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.tab-item {
+    padding: 10px 18px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    background-color: #fff;
+    color: #333;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.tab-item.active {
+    background: linear-gradient(90deg, #6c5ce7 0%, #a29bfe 100%);
+    color: white;
+    border-color: #6c5ce7;
+    box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+    transform: scale(1.02);
+}
+
+.tab-item:hover:not(.active) {
+    background-color: #f1f3f4;
+    transform: translateY(-1px);
+}
+
 /* 🔥 반응형 디자인 - 모바일 최적화 */
 @media (max-width: 768px) {
   .menu-container {
@@ -829,8 +868,8 @@
 
   /* 🎯 모바일에서 2개씩 배치 */
   .menu-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 22px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 22px !important;
   }
 
   .menu-card {
@@ -889,6 +928,19 @@
     font-size: 18px;
     margin: 0 0 16px 0;
   }
+
+  .tab-bar {
+    padding: 0 16px;
+  }
+  
+  .tab-item {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+  
+  .tab-bar-container {
+    margin-bottom: 15px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -902,8 +954,8 @@
 
   /* 🎯 작은 모바일에서도 2개씩 유지 */
   .menu-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 18px !important;
   }
 
   .menu-info {
@@ -932,12 +984,18 @@
   .floating-total {
     font-size: 14px;
   }
+
+  .tab-bar {
+    padding: 0 12px;
+    gap: 8px;
+  }
 }
 
 /* 🔥 더 작은 화면 (아이폰 SE 등) */
 @media (max-width: 375px) {
   .menu-grid {
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 15px !important;
   }
 
   .menu-info {
@@ -976,85 +1034,4 @@
 .checkout-btn:focus {
   outline: 2px solid #6c5ce7;
   outline-offset: 2px;
-}
-
-/* ============================= */
-/* 💡 [NEW] 탭 바 스타일 시작 */
-/* ============================= */
-
-/* 탭 바 컨테이너 (상단 고정 및 그림자 추가) */
-.tab-bar-container {
-    position: sticky;
-    top: 0; /* 헤더 바로 아래 */
-    z-index: 99; /* 헤더(z-index: 100) 바로 아래에 위치 */
-    background-color: #f8f8f8; 
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    padding: 10px 0;
-    margin-bottom: 20px; /* 탭과 메뉴 사이에 여백 추가 */
-    overflow-x: auto; /* 탭이 많아지면 스크롤 가능 */
-    -webkit-overflow-scrolling: touch;
-}
-
-/* 탭 리스트 - 가로 정렬 및 중앙 배치 */
-.tab-bar {
-    display: flex;
-    justify-content: flex-start; /* 탭이 적을 땐 중앙 정렬 */
-    gap: 12px;
-    max-width: 800px; /* 메뉴 컨테이너와 동일한 최대 너비 */
-    margin: 0 auto;
-    padding: 0 24px; /* 양쪽에 여백 주기 */
-}
-
-/* 개별 탭 버튼 - 존재감을 위한 크고 밝은 버튼 */
-.tab-item {
-    padding: 10px 18px;
-    border: 1px solid #ddd;
-    border-radius: 25px;
-    background-color: #fff;
-    color: #333;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap; 
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    
-    /* 기본 버튼 스타일 제거 */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
-
-/* 활성화된 탭 - 메인 퍼플 색상으로 확실한 존재감 */
-.tab-item.active {
-    background: linear-gradient(90deg, #6c5ce7 0%, #a29bfe 100%); /* 퍼플 그라데이션 */
-    color: white;
-    border-color: #6c5ce7;
-    box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3); /* 그림자로 강조 */
-    transform: scale(1.02); /* 살짝 커지게 */
-}
-
-.tab-item:hover:not(.active) {
-    background-color: #f1f3f4;
-    transform: translateY(-1px);
-}
-
-/* 모바일 반응형 조정 */
-@media (max-width: 768px) {
-    .tab-bar {
-        padding: 0 16px; /* 모바일 패딩 조정 */
-    }
-    .tab-item {
-        padding: 8px 14px;
-        font-size: 14px;
-    }
-    .tab-bar-container {
-        margin-bottom: 15px;
-    }
-}
-@media (max-width: 480px) {
-    .tab-bar {
-        padding: 0 12px;
-        gap: 8px;
-    }
 }

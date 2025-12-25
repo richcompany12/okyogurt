@@ -156,6 +156,11 @@ const OrderPage = () => {
           };
           setVisibleTabs(loadedVisibleTabs);
 
+          // 💡 수정: 초기 탭을 항상 'YOGURT'로 설정 (요거트 아이스크림 고정)
+          setActiveTab('YOGURT');
+          
+          setStore(storeData);
+          
           // 첫 번째로 노출이 허용된 탭을 찾아서 활성화
           const firstVisibleTab = Object.keys(loadedVisibleTabs).find(key => loadedVisibleTabs[key]) || 'YOGURT';
           setActiveTab(firstVisibleTab);
@@ -655,7 +660,7 @@ const fallbackUnsubscribe = onSnapshot(fallbackQuery, (snapshot) => {
             {/* 💡 필터링된 메뉴 리스트 */}
             <div className="menu-list-container">
               {menus.length > 0 ? (
-                <div className="menu-list">
+                <div className="menu-grid">
                   
                   {/* activeTab과 메뉴의 category_tab이 일치하는 메뉴만 표시 */}
                   {menus
